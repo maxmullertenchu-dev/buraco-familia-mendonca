@@ -13,7 +13,8 @@
         .btn-gold:active { transform: scale(0.95); }
         .hidden { display: none !important; }
         .menu-flutuante { position: absolute; right: 10px; top: 45px; background: #1a2e2a; border: 1px solid #f59e0b; border-radius: 8px; z-index: 100; min-width: 120px; }
-        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
+        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; position: relative; border: 1px solid #ccc; cursor: pointer; }
+        .card-selected { border: 3px solid #f59e0b; transform: translateY(-10px); }
     </style>
 </head>
 <body>
@@ -38,10 +39,10 @@
                 <button onclick="fazerLogout()" class="bg-red-900/50 p-2 rounded-lg">🚪</button>
             </div>
             <div class="grid gap-4">
-                <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between">
+                <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
                     <span>🎮 Jogar Online</span> <span>❯</span>
                 </button>
-                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold">
+                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold shadow-lg">
                     <span>🎓 Sala de Treino</span> <span>❯</span>
                 </button>
                 <div class="grid grid-cols-2 gap-4">
@@ -55,52 +56,71 @@
             <div class="flex items-center justify-between mb-6">
                 <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
                 <h2 class="text-2xl font-bold text-yellow-500">Salas</h2>
-                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold">+</button>
+                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg">+</button>
             </div>
             <div id="lista-salas" class="space-y-4"></div>
         </section>
 
         <section id="view-mesa" class="hidden fixed inset-0 bg-[#064e3b] z-50 flex flex-col">
             <div class="p-4 flex justify-between items-center bg-black/30 border-b border-white/10">
-                <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-4 py-2 rounded uppercase">Sair</button>
-                <div class="flex gap-6">
-                    <div class="text-center">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Nós</p>
-                        <p id="placar-d1" class="text-2xl font-black text-yellow-500">0</p>
-                        <div id="ctrl-d1" class="hidden flex gap-3 mt-1">
-                            <button onclick="pontuar('d1_pontos', -10)" class="bg-red-600/40 w-8 h-8 rounded-full border border-red-500 text-white">-</button>
-                            <button onclick="pontuar('d1_pontos', 10)" class="bg-green-600/40 w-8 h-8 rounded-full border border-green-500 text-white">+</button>
+                <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-3 py-2 rounded uppercase font-bold">Sair</button>
+                <div class="flex gap-4">
+                    <div class="text-center bg-white/5 px-3 py-1 rounded">
+                        <p class="text-[9px] text-gray-400 font-bold uppercase">Nós (T1)</p>
+                        <p id="placar-d1" class="text-xl font-black text-yellow-500">0</p>
+                        <div id="ctrl-d1" class="hidden flex gap-2 mt-1">
+                            <button onclick="pontuar('d1_pontos', -10)" class="bg-red-600/40 w-6 h-6 rounded-full border border-red-500 text-xs">-</button>
+                            <button onclick="pontuar('d1_pontos', 10)" class="bg-green-600/40 w-6 h-6 rounded-full border border-green-500 text-xs">+</button>
                         </div>
                     </div>
-                    <div class="text-center">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Eles</p>
-                        <p id="placar-d2" class="text-2xl font-black text-yellow-500">0</p>
-                        <div id="ctrl-d2" class="hidden flex gap-3 mt-1">
-                            <button onclick="pontuar('d2_pontos', -10)" class="bg-red-600/40 w-8 h-8 rounded-full border border-red-500 text-white">-</button>
-                            <button onclick="pontuar('d2_pontos', 10)" class="bg-green-600/40 w-8 h-8 rounded-full border border-green-500 text-white">+</button>
+                    <div class="text-center bg-white/5 px-3 py-1 rounded">
+                        <p class="text-[9px] text-gray-400 font-bold uppercase">Eles (T2)</p>
+                        <p id="placar-d2" class="text-xl font-black text-yellow-500">0</p>
+                        <div id="ctrl-d2" class="hidden flex gap-2 mt-1">
+                            <button onclick="pontuar('d2_pontos', -10)" class="bg-red-600/40 w-6 h-6 rounded-full border border-red-500 text-xs">-</button>
+                            <button onclick="pontuar('d2_pontos', 10)" class="bg-green-600/40 w-6 h-6 rounded-full border border-green-500 text-xs">+</button>
                         </div>
                     </div>
                 </div>
-                <button id="btn-encerrar" class="bg-red-600 text-[10px] px-3 py-2 rounded hidden font-bold">FECHAR</button>
+                <button id="btn-encerrar" class="bg-red-600 text-[10px] px-2 py-2 rounded hidden font-bold">FECHAR</button>
             </div>
-            <div class="flex-1 flex flex-col items-center justify-center">
-                <span id="label-mesa" class="text-white/10 uppercase font-black text-xl mb-4"></span>
-                <div class="text-8xl">🎴</div>
+
+            <div class="flex-1 flex items-center justify-center gap-8 relative">
+                <div class="flex flex-col items-center gap-2">
+                    <div onclick="comprarBaralho()" class="w-20 h-28 bg-blue-900 rounded-lg border-2 border-white/20 shadow-2xl flex items-center justify-center cursor-pointer">
+                        <span class="text-4xl text-white/20">🎴</span>
+                    </div>
+                    <p class="text-[10px] uppercase font-bold text-white/50">Baralho</p>
+                </div>
+
+                <div class="flex flex-col items-center gap-2">
+                    <div id="lixo-container" onclick="comprarLixo()" class="w-20 h-28 bg-black/20 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer overflow-hidden">
+                        <span id="lixo-vazio" class="text-white/10">LIXO</span>
+                    </div>
+                    <p class="text-[10px] uppercase font-bold text-white/50">Lixo</p>
+                </div>
             </div>
-            <div class="bg-black/40 p-6 overflow-x-auto flex gap-2 justify-center" id="mao-jogador"></div>
+
+            <div class="bg-black/40 p-4 border-t border-white/10">
+                <div class="flex justify-between items-center mb-2 px-2">
+                    <span class="text-[10px] font-bold text-yellow-500 uppercase">Sua Mão (11 cartas)</span>
+                    <button id="btn-descartar" onclick="descartarCarta()" class="bg-yellow-600 text-black text-[10px] px-4 py-1 rounded font-black hidden">DESCARTAR SELECIONADA</button>
+                </div>
+                <div class="overflow-x-auto flex gap-2 py-2" id="mao-jogador"></div>
+            </div>
         </section>
 
         <section id="view-treino" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')">⬅️ Voltar</button>
-            <h2 class="text-2xl mt-10">Sala de Treino</h2>
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-green-400">Sala de Treino</h2>
         </section>
         <section id="view-ranking" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')">⬅️ Voltar</button>
-            <h2 class="text-2xl mt-10">Ranking</h2>
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-blue-400">Ranking Familiar</h2>
         </section>
         <section id="view-torneios" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')">⬅️ Voltar</button>
-            <h2 class="text-2xl mt-10">Torneios</h2>
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-purple-400">Torneios Ativos</h2>
         </section>
     </div>
 
@@ -111,6 +131,8 @@
 
         let currentUser = null;
         let salaAtivaId = null;
+        let cartaSelecionadaIndex = null;
+        let minhaMao = [];
 
         function changeView(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -126,6 +148,7 @@
             }
         });
 
+        // --- AUTH ---
         function alternarModoAuth() {
             const isLogin = document.getElementById('btn-signup-action').classList.contains('hidden');
             document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Buraco Mendonça";
@@ -152,15 +175,13 @@
             else alert("Verifique seu e-mail!");
         }
 
-        async function fazerLogout() {
-            await _supabase.auth.signOut();
-            window.location.replace(window.location.pathname);
-        }
+        async function fazerLogout() { await _supabase.auth.signOut(); window.location.replace(window.location.pathname); }
 
+        // --- SALAS ---
         async function abrirSalas() {
             changeView('view-salas');
             carregarSalas();
-            _supabase.channel('salas_live').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+            _supabase.channel('salas_realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
                 carregarSalas();
                 if (salaAtivaId) atualizarDadosMesa();
             }).subscribe();
@@ -174,77 +195,46 @@
                 salas.forEach(sala => {
                     const souDono = currentUser && currentUser.id === sala.criador_id;
                     container.innerHTML += `
-                        <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/10">
+                        <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/10 shadow-lg">
                             <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
-                                <p class="font-bold">${sala.nome}</p>
-                                <p class="text-[10px] text-yellow-500">Criado por: ${sala.criador_nome}</p>
+                                <p class="font-bold text-lg">${sala.nome}</p>
+                                <p class="text-[10px] text-yellow-500 uppercase font-bold">Criador: ${sala.criador_nome}</p>
                             </div>
-                            ${souDono ? `<button onclick="document.getElementById('m-${sala.id}').classList.toggle('hidden')" class="p-2">⋮</button>
+                            ${souDono ? `<button onclick="document.getElementById('m-${sala.id}').classList.toggle('hidden')" class="p-2 text-xl">⋮</button>
                             <div id="m-${sala.id}" class="hidden menu-flutuante border border-yellow-500/50">
-                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-4 text-red-500 text-xs font-bold uppercase">Encerrar</button>
+                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-4 text-red-500 text-xs font-bold uppercase">Encerrar Mesa</button>
                             </div>` : ''}
                         </div>`;
                 });
             }
         }
 
+        // --- MECÂNICA DE JOGO ---
         async function entrarNaMesa(id, nome, criadorId) {
             salaAtivaId = id;
             changeView('view-mesa');
-            document.getElementById('label-mesa').innerText = nome;
             const souDono = currentUser && currentUser.id === criadorId;
+            
             document.getElementById('btn-encerrar').classList.toggle('hidden', !souDono);
             document.getElementById('ctrl-d1').classList.toggle('hidden', !souDono);
             document.getElementById('ctrl-d2').classList.toggle('hidden', !souDono);
-            if(souDono) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
+            
             atualizarDadosMesa();
+            distribuirCartasIniciais();
+        }
+
+        function distribuirCartasIniciais() {
+            const naipes = ['♥️', '♦️', '♣️', '♠️'];
+            const valores = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            minhaMao = [];
+            for(let i=0; i<11; i++) {
+                const n = naipes[Math.floor(Math.random() * naipes.length)];
+                const v = valores[Math.floor(Math.random() * valores.length)];
+                minhaMao.push({ v, n, cor: (n === '♥️' || n === '♦️') ? 'text-red-600' : 'text-black' });
+            }
             renderMao();
         }
 
-        async function atualizarDadosMesa() {
-            if(!salaAtivaId) return;
-            const { data: sala } = await _supabase.from('salas').select('*').eq('id', salaAtivaId).maybeSingle();
-            if(sala) {
-                document.getElementById('placar-d1').innerText = sala.d1_pontos || 0;
-                document.getElementById('placar-d2').innerText = sala.d2_pontos || 0;
-            } else {
-                salaAtivaId = null;
-                changeView('view-salas');
-            }
-        }
-
-        async function pontuar(coluna, valor) {
-            if(!salaAtivaId) return;
-            const elId = coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2';
-            const novoValor = (parseInt(document.getElementById(elId).innerText) || 0) + valor;
-            document.getElementById(elId).innerText = novoValor;
-            const { error } = await _supabase.from('salas').update({ [coluna]: novoValor }).eq('id', salaAtivaId);
-            if (error) {
-                alert("Erro de permissão no banco de dados.");
-                atualizarDadosMesa();
-            }
-        }
-
-        async function criarNovaSala() {
-            const n = prompt("Nome da Mesa:");
-            if (n) await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0], d1_pontos: 0, d2_pontos: 0 }]);
-        }
-
-        async function fecharSala(id) {
-            if (confirm("Encerrar mesa?")) {
-                await _supabase.from('salas').delete().eq('id', id);
-                salaAtivaId = null;
-                changeView('view-salas');
-            }
-        }
-
         function renderMao() {
-            const m = document.getElementById('mao-jogador');
-            m.innerHTML = '';
-            for(let i=0; i<11; i++) m.innerHTML += `<div class="card-hand">A<span class="text-red-600 text-2xl">♥️</span></div>`;
-        }
-
-        function sairDaMesa() { salaAtivaId = null; changeView('view-salas'); }
-    </script>
-</body>
-</html>
+            const container = document.getElementById('mao-jogador');
+            container.
