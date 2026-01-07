@@ -11,57 +11,46 @@
         .bg-card-dark { background-color: #1a2e2a; border: 1px solid rgba(255,255,255,0.1); }
         .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; }
         .hidden { display: none; }
-        /* Estilo para o menu de 3 pontinhos */
-        .menu-options { position: absolute; right: 10px; top: 40px; background: #2d3748; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 50; width: 120px; }
-        .card-hand { min-width: 50px; height: 75px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #ccc; }
+        .menu-flutuante { position: absolute; right: 10px; top: 45px; background: #1a2e2a; border: 1px solid #f59e0b; border-radius: 8px; z-index: 100; min-width: 120px; }
     </style>
 </head>
 <body>
     <div id="app">
         <section id="view-auth" class="min-h-screen flex items-center justify-center p-6">
             <div class="bg-card-dark p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
-                <div class="text-5xl mb-2">🃏</div>
-                <h1 id="auth-title" class="text-3xl font-bold text-yellow-500">Buraco</h1>
-                <p class="text-gray-300 mb-6 text-sm">Família Mendonça</p>
-                <div class="space-y-4">
-                    <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <button id="btn-principal" onclick="handleLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
-                    <button id="auth-toggle-btn" onclick="toggleAuthMode()" class="text-gray-400 text-sm hover:text-white underline">Não tem conta? Cadastre-se</button>
-                </div>
+                <h1 class="text-3xl font-bold text-yellow-500 mb-6">Buraco Mendonça</h1>
+                <input type="email" id="email" placeholder="E-mail" class="w-full p-3 mb-4 rounded bg-black/20 border border-white/10 outline-none">
+                <input type="password" id="pass" placeholder="Senha" class="w-full p-3 mb-6 rounded bg-black/20 border border-white/10 outline-none">
+                <button onclick="handleLogin()" class="btn-gold w-full py-3 rounded-lg">Entrar</button>
             </div>
         </section>
 
         <section id="view-menu" class="hidden min-h-screen p-6">
             <div class="flex justify-between items-center mb-8 bg-black/20 p-4 rounded-xl">
-                <div>
-                    <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
-                </div>
-                <button onclick="logout()" class="bg-red-900/50 p-2 rounded-lg text-xl">🚪</button>
+                <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
+                <button onclick="logout()" class="text-xl">🚪</button>
             </div>
-            <div class="grid gap-4">
-                <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between text-lg">
-                    <span>🎮 Jogar Online</span> <span>❯</span>
-                </button>
-            </div>
+            <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex justify-between text-lg">
+                <span>🎮 Jogar Online</span> <span>❯</span>
+            </button>
         </section>
 
         <section id="view-salas" class="hidden min-h-screen p-6">
             <div class="flex items-center justify-between mb-6">
                 <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
-                <h2 class="text-2xl font-bold text-yellow-500">Salas de Jogo</h2>
-                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-extrabold shadow-lg">+</button>
+                <h2 class="text-2xl font-bold text-yellow-500">Lobby</h2>
+                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold">+</button>
             </div>
             <div id="lista-salas" class="space-y-4"></div>
         </section>
 
         <section id="view-mesa" class="hidden fixed inset-0 bg-[#064e3b] z-50 flex flex-col">
             <div class="p-4 flex justify-between items-center bg-black/20">
-                <button id="btn-fechar-sala" class="bg-red-600 text-white text-[10px] px-3 py-1 rounded hidden">ENCERRAR SALA</button>
-                <button onclick="sairDaMesa()" class="text-white text-[10px] border border-white/20 px-2 py-1 rounded">SAIR</button>
+                <button onclick="changeView('view-salas')" class="text-xs border border-white/20 px-2 py-1 rounded">VOLTAR</button>
+                <h2 id="nome-sala-ativa" class="font-bold text-yellow-500">Mesa</h2>
+                <button id="btn-encerrar-mesa" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded hidden">ENCERRAR</button>
             </div>
-            <div class="flex-1 flex items-center justify-center text-4xl">🎴</div>
-            <div id="mao-jogador" class="bg-black/40 p-4 flex gap-1 overflow-x-auto"></div>
+            <div class="flex-1 flex items-center justify-center">🎴</div>
         </section>
     </div>
 
@@ -71,8 +60,8 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
-        let activeSubscription = null;
 
+        // LOGIN PERSISTENTE
         window.onload = async () => {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
@@ -82,26 +71,20 @@
             }
         };
 
-        function changeView(viewId) {
+        function changeView(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
         }
 
         async function abrirSalas() {
             changeView('view-salas');
             carregarSalas();
-            inscreverRealtime(); // Ativa atualização em tempo real
-        }
-
-        // FUNÇÃO REALTIME: Escuta o banco de dados e atualiza a lista na hora
-        function inscreverRealtime() {
-            if (activeSubscription) _supabase.removeChannel(activeSubscription);
             
-            activeSubscription = _supabase.channel('salas-realtime')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
-                    carregarSalas();
-                })
-                .subscribe();
+            // ESCUTA O BANCO EM TEMPO REAL
+            _supabase.channel('custom-all-channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+                carregarSalas();
+            }).subscribe();
         }
 
         async function carregarSalas() {
@@ -109,84 +92,67 @@
             const container = document.getElementById('lista-salas');
             container.innerHTML = '';
             
-            if (!salas || salas.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 mt-10">Nenhuma sala criada.</p>';
-                return;
-            }
-
             salas.forEach(sala => {
-                const eCriador = currentUser && currentUser.id === sala.criador_id;
+                const souDono = currentUser && currentUser.id === sala.criador_id;
                 container.innerHTML += `
-                    <div class="bg-card-dark p-6 rounded-2xl border-l-4 border-yellow-500 flex justify-between items-center relative shadow-lg">
-                        <div onclick="entrarNaMesa('${sala.id}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
-                            <h3 class="font-bold text-white">${sala.nome}</h3>
-                            <p class="text-[10px] text-gray-400">Criador: ${sala.criador_nome}</p>
+                    <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/5">
+                        <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
+                            <p class="font-bold text-white">${sala.nome}</p>
+                            <p class="text-[10px] text-gray-400">Dono: ${sala.criador_nome}</p>
                         </div>
-                        ${eCriador ? `
-                            <button onclick="toggleMenu('${sala.id}')" class="p-2 text-xl">⋮</button>
-                            <div id="menu-${sala.id}" class="hidden menu-options p-2">
-                                <button onclick="editarSala('${sala.id}', '${sala.nome}')" class="w-full text-left text-xs py-2 hover:text-yellow-500">✏️ Editar</button>
-                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left text-xs py-2 text-red-500 hover:text-red-400">🗑️ Encerrar</button>
+                        ${souDono ? `
+                            <button onclick="event.stopPropagation(); abrirMenu('${sala.id}')" class="p-2">⋮</button>
+                            <div id="menu-${sala.id}" class="hidden menu-flutuante shadow-2xl">
+                                <button onclick="editarNome('${sala.id}', '${sala.nome}')" class="w-full text-left p-3 text-xs border-b border-white/5">✏️ Editar</button>
+                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-3 text-xs text-red-500">🗑️ Encerrar</button>
                             </div>
-                        ` : '<span class="text-[10px] text-green-500 font-bold">DISPONÍVEL</span>'}
+                        ` : ''}
                     </div>`;
             });
         }
 
         async function criarNovaSala() {
-            const nomeSala = prompt("Nome da Sala:");
-            if (!nomeSala) return;
-
-            const { error } = await _supabase.from('salas').insert([
-                { nome: nomeSala, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0] }
-            ]);
-
-            if (error) {
-                if (error.code === '23505') alert("Já existe uma sala com esse nome!");
-                else alert("Erro: " + error.message);
-            }
-            // Não precisa chamar carregarSalas aqui, o Realtime cuidará disso!
+            const n = prompt("Nome da Sala:");
+            if (!n) return;
+            const { error } = await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0] }]);
+            if (error && error.code === '23505') alert("Nome já existe!");
         }
 
-        function toggleMenu(id) {
-            const menu = document.getElementById(`menu-${id}`);
-            menu.classList.toggle('hidden');
+        function abrirMenu(id) {
+            document.querySelectorAll('.menu-flutuante').forEach(m => m.id !== `menu-${id}` && m.classList.add('hidden'));
+            document.getElementById(`menu-${id}`).classList.toggle('hidden');
         }
 
-        async function editarSala(id, nomeAtual) {
-            const novoNome = prompt("Novo nome da sala:", nomeAtual);
-            if (!novoNome || novoNome === nomeAtual) return;
-            await _supabase.from('salas').update({ nome: novoNome }).eq('id', id);
+        async function editarNome(id, nomeVelho) {
+            const n = prompt("Novo nome:", nomeVelho);
+            if (n) await _supabase.from('salas').update({ nome: n }).eq('id', id);
         }
 
-        async function fecharSala(salaId) {
-            if (confirm("Encerrar esta sala definitivamente?")) {
-                await _supabase.from('salas').delete().eq('id', salaId);
-                if (document.getElementById('view-mesa').classList.contains('hidden') === false) {
-                    changeView('view-salas');
-                }
+        async function fecharSala(id) {
+            if (confirm("Encerrar sala?")) {
+                await _supabase.from('salas').delete().eq('id', id);
+                changeView('view-salas');
             }
         }
 
-        function entrarNaMesa(salaId, criadorId) {
+        function entrarNaMesa(id, nome, criadorId) {
             changeView('view-mesa');
-            const btnFechar = document.getElementById('btn-fechar-sala');
+            document.getElementById('nome-sala-ativa').innerText = nome;
+            const btn = document.getElementById('btn-encerrar-mesa');
             if (currentUser.id === criadorId) {
-                btnFechar.classList.remove('hidden');
-                btnFechar.onclick = () => fecharSala(salaId);
+                btn.classList.remove('hidden');
+                btn.onclick = () => fecharSala(id);
             } else {
-                btnFechar.classList.add('hidden');
+                btn.classList.add('hidden');
             }
         }
-
-        function sairDaMesa() { changeView('view-salas'); }
 
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('pass').value;
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
             if (error) alert(error.message);
-            else { currentUser = data.user; location.reload(); }
+            else location.reload();
         }
 
         async function logout() { await _supabase.auth.signOut(); location.reload(); }
