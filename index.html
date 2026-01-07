@@ -123,7 +123,7 @@
         let currentUser = null;
         let salaAtivaId = null;
         let minhaMao = [];
-        let lixoAtual = [];
+        let lixoGlobal = [];
         let indexSelecionado = null;
         let jaComprouNessaRodada = false;
 
@@ -168,7 +168,7 @@
         async function abrirSalas() {
             changeView('view-salas');
             carregarSalas();
-            _supabase.channel('game_channel').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+            _supabase.channel('game_sync').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
                 carregarSalas();
                 if (salaAtivaId) atualizarDadosMesa();
             }).subscribe();
@@ -182,15 +182,12 @@
                 salas.forEach(sala => {
                     const souDono = currentUser && currentUser.id === sala.criador_id;
                     container.innerHTML += `
-                        <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center relative border border-white/10 shadow-lg">
+                        <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10 shadow-lg">
                             <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
                                 <p class="font-bold text-lg">${sala.nome}</p>
                                 <p class="text-[10px] text-yellow-500 uppercase font-bold">Criador: ${sala.criador_nome}</p>
                             </div>
-                            ${souDono ? `<button onclick="document.getElementById('m-${sala.id}').classList.toggle('hidden')" class="p-2 text-xl">⋮</button>
-                            <div id="m-${sala.id}" class="hidden menu-flutuante border border-yellow-500/50">
-                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-4 text-red-500 text-xs font-bold uppercase">Encerrar Mesa</button>
-                            </div>` : ''}
+                            ${souDono ? `<button onclick="fecharSala('${sala.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
                         </div>`;
                 });
             }
@@ -242,14 +239,17 @@
             renderizarMao();
         }
 
-        function descartarSelecionada() {
+        async function descartarSelecionada() {
             if(indexSelecionado === null) return;
             const carta = minhaMao[indexSelecionado];
-            lixoAtual.push(carta);
-            renderizarLixo();
+            
+            // Sincroniza com o Banco
+            const novoLixo = [...lixoGlobal, carta];
+            await _supabase.from('salas').update({ lixo: novoLixo }).eq('id', salaAtivaId);
+            
             minhaMao.splice(indexSelecionado, 1);
             indexSelecionado = null;
-            jaComprouNessaRodada = false; // RESETA O BLOQUEIO APÓS O DESCARTE
+            jaComprouNessaRodada = false;
             document.getElementById('monte-fechado').classList.remove('disabled-deck');
             document.getElementById('btn-descartar').classList.add('hidden');
             renderizarMao();
@@ -257,8 +257,8 @@
 
         function renderizarLixo() {
             const area = document.getElementById('area-lixo');
-            if(lixoAtual.length > 0) {
-                const topo = lixoAtual[lixoAtual.length - 1];
+            if(lixoGlobal && lixoGlobal.length > 0) {
+                const topo = lixoGlobal[lixoGlobal.length - 1];
                 area.innerHTML = `<div class="card-hand scale-75"><span>${topo.v}</span><span class="${topo.cor} text-2xl">${topo.n}</span></div>`;
             } else {
                 area.innerHTML = `<span class="text-white/10 text-xs font-bold uppercase">Vazio</span>`;
@@ -266,27 +266,24 @@
         }
 
         function comprarDoMonte() {
-            if(jaComprouNessaRodada) {
-                alert("Você já comprou do monte. Descarte uma carta primeiro!");
-                return;
-            }
+            if(jaComprouNessaRodada) return;
             minhaMao.push(gerarCartaAleatoria());
             jaComprouNessaRodada = true;
             document.getElementById('monte-fechado').classList.add('disabled-deck');
             renderizarMao();
         }
 
-        function comprarLixoCompleto() {
-            if(jaComprouNessaRodada) {
-                alert("Você já comprou nesta rodada!");
-                return;
-            }
-            if(lixoAtual.length === 0) return;
-            minhaMao = [...minhaMao, ...lixoAtual];
-            lixoAtual = [];
+        async function comprarLixoCompleto() {
+            if(jaComprouNessaRodada || !lixoGlobal || lixoGlobal.length === 0) return;
+            
+            // Pega as cartas localmente
+            minhaMao = [...minhaMao, ...lixoGlobal];
+            
+            // Esvazia no banco
+            await _supabase.from('salas').update({ lixo: [] }).eq('id', salaAtivaId);
+            
             jaComprouNessaRodada = true;
             document.getElementById('monte-fechado').classList.add('disabled-deck');
-            renderizarLixo();
             renderizarMao();
         }
 
@@ -296,31 +293,11 @@
             if(sala) {
                 document.getElementById('placar-d1').innerText = sala.d1_pontos || 0;
                 document.getElementById('placar-d2').innerText = sala.d2_pontos || 0;
+                lixoGlobal = sala.lixo || [];
+                renderizarLixo();
             }
         }
 
         async function pontuar(coluna, valor) {
             const elId = coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2';
             const novo = (parseInt(document.getElementById(elId).innerText) || 0) + valor;
-            document.getElementById(elId).innerText = novo;
-            await _supabase.from('salas').update({ [coluna]: novo }).eq('id', salaAtivaId);
-        }
-
-        async function criarNovaSala() {
-            const n = prompt("Nome da Mesa:");
-            if (n && currentUser) {
-                await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0], d1_pontos: 0, d2_pontos: 0 }]);
-            }
-        }
-
-        async function fecharSala(id) {
-            if (confirm("ENCERRAR MESA definitivamente?")) {
-                await _supabase.from('salas').delete().eq('id', id);
-                sairDaMesa();
-            }
-        }
-
-        function sairDaMesa() { salaAtivaId = null; changeView('view-menu'); }
-    </script>
-</body>
-</html>
