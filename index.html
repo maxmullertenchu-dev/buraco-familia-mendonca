@@ -113,6 +113,15 @@
                 <div class="overflow-x-auto flex gap-2 justify-start min-h-[100px]" id="mao-jogador"></div>
             </div>
         </section>
+
+        <section id="view-treino" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-green-400">Sala de Treino</h2>
+        </section>
+        <section id="view-ranking" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-blue-400">Ranking</h2>
+        </section>
     </div>
 
     <script>
@@ -127,15 +136,27 @@
         let indexSelecionado = null;
         let jaComprouNessaRodada = false;
 
+        // --- SISTEMA DE LOGIN BLINDADO ---
+        async function checkUser() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            handleAuth(session?.user);
+        }
+
         _supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                currentUser = session.user;
-                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
-                if(!document.getElementById('view-auth').classList.contains('hidden')) changeView('view-menu');
+            handleAuth(session?.user);
+        });
+
+        function handleAuth(user) {
+            currentUser = user;
+            if (user) {
+                document.getElementById('user-display').innerText = user.email.split('@')[0];
+                if (!document.getElementById('view-auth').classList.contains('hidden')) {
+                    changeView('view-menu');
+                }
             } else {
                 changeView('view-auth');
             }
-        });
+        }
 
         async function fazerLogin() {
             const email = document.getElementById('email').value.trim();
@@ -151,11 +172,15 @@
             if (error) alert(error.message); else alert("Verifique seu e-mail!");
         }
 
-        async function fazerLogout() { await _supabase.auth.signOut(); location.reload(); }
+        async function fazerLogout() { 
+            await _supabase.auth.signOut(); 
+            location.reload(); 
+        }
 
         function changeView(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
+            const el = document.getElementById(id);
+            if(el) el.classList.remove('hidden');
         }
 
         function alternarModoAuth() {
@@ -165,6 +190,7 @@
             document.getElementById('btn-signup-action').classList.toggle('hidden', !isLogin);
         }
 
+        // --- LÓGICA DE SALAS E JOGO ---
         async function abrirSalas() {
             changeView('view-salas');
             carregarSalas();
@@ -222,6 +248,7 @@
 
         function renderizarMao() {
             const container = document.getElementById('mao-jogador');
+            if(!container) return;
             container.innerHTML = '';
             minhaMao.forEach((carta, i) => {
                 const sel = (indexSelecionado === i) ? 'card-selected' : '';
@@ -242,9 +269,8 @@
         async function descartarSelecionada() {
             if(indexSelecionado === null) return;
             const carta = minhaMao[indexSelecionado];
-            
-            // Sincroniza com o Banco
             const novoLixo = [...lixoGlobal, carta];
+            
             await _supabase.from('salas').update({ lixo: novoLixo }).eq('id', salaAtivaId);
             
             minhaMao.splice(indexSelecionado, 1);
@@ -257,6 +283,7 @@
 
         function renderizarLixo() {
             const area = document.getElementById('area-lixo');
+            if(!area) return;
             if(lixoGlobal && lixoGlobal.length > 0) {
                 const topo = lixoGlobal[lixoGlobal.length - 1];
                 area.innerHTML = `<div class="card-hand scale-75"><span>${topo.v}</span><span class="${topo.cor} text-2xl">${topo.n}</span></div>`;
@@ -275,13 +302,8 @@
 
         async function comprarLixoCompleto() {
             if(jaComprouNessaRodada || !lixoGlobal || lixoGlobal.length === 0) return;
-            
-            // Pega as cartas localmente
             minhaMao = [...minhaMao, ...lixoGlobal];
-            
-            // Esvazia no banco
             await _supabase.from('salas').update({ lixo: [] }).eq('id', salaAtivaId);
-            
             jaComprouNessaRodada = true;
             document.getElementById('monte-fechado').classList.add('disabled-deck');
             renderizarMao();
@@ -301,3 +323,30 @@
         async function pontuar(coluna, valor) {
             const elId = coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2';
             const novo = (parseInt(document.getElementById(elId).innerText) || 0) + valor;
+            await _supabase.from('salas').update({ [coluna]: novo }).eq('id', salaAtivaId);
+        }
+
+        async function criarNovaSala() {
+            const n = prompt("Nome da Mesa:");
+            if (n && currentUser) {
+                await _supabase.from('salas').insert([{ 
+                    nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0], 
+                    d1_pontos: 0, d2_pontos: 0, lixo: [] 
+                }]);
+            }
+        }
+
+        async function fecharSala(id) {
+            if (confirm("ENCERRAR MESA definitivamente?")) {
+                await _supabase.from('salas').delete().eq('id', id);
+                sairDaMesa();
+            }
+        }
+
+        function sairDaMesa() { salaAtivaId = null; changeView('view-menu'); }
+
+        // Inicializa verificando o usuário
+        checkUser();
+    </script>
+</body>
+</html>
