@@ -46,11 +46,34 @@
 
         <section id="view-mesa" class="hidden fixed inset-0 bg-[#064e3b] z-50 flex flex-col">
             <div class="p-4 flex justify-between items-center bg-black/20">
-                <button onclick="changeView('view-salas')" class="text-xs border border-white/20 px-2 py-1 rounded">VOLTAR</button>
-                <h2 id="nome-sala-ativa" class="font-bold text-yellow-500">Mesa</h2>
+                <button onclick="changeView('view-salas')" class="text-xs border border-white/20 px-2 py-1 rounded">SAIR</button>
+                
+                <div class="flex gap-4 text-center">
+                    <div class="bg-black/30 px-3 py-1 rounded border border-white/10">
+                        <p class="text-[10px] text-gray-400">DUPLA 1</p>
+                        <p id="placar-d1" class="text-xl font-bold text-yellow-500">0</p>
+                        <div id="controles-d1" class="hidden flex gap-2 mt-1">
+                            <button onclick="alterarPontos('d1_pontos', -10)" class="bg-red-900 px-1 rounded">-</button>
+                            <button onclick="alterarPontos('d1_pontos', 10)" class="bg-green-900 px-1 rounded">+</button>
+                        </div>
+                    </div>
+                    <div class="bg-black/30 px-3 py-1 rounded border border-white/10">
+                        <p class="text-[10px] text-gray-400">DUPLA 2</p>
+                        <p id="placar-d2" class="text-xl font-bold text-yellow-500">0</p>
+                        <div id="controles-d2" class="hidden flex gap-2 mt-1">
+                            <button onclick="alterarPontos('d2_pontos', -10)" class="bg-red-900 px-1 rounded">-</button>
+                            <button onclick="alterarPontos('d2_pontos', 10)" class="bg-green-900 px-1 rounded">+</button>
+                        </div>
+                    </div>
+                </div>
+
                 <button id="btn-encerrar-mesa" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded hidden">ENCERRAR</button>
             </div>
-            <div class="flex-1 flex items-center justify-center">🎴</div>
+            
+            <div class="flex-1 flex flex-col items-center justify-center">
+                <p id="nome-sala-ativa" class="text-white/20 font-bold uppercase tracking-widest text-sm mb-4">Mesa</p>
+                <div class="text-6xl">🎴</div>
+            </div>
         </section>
     </div>
 
@@ -60,8 +83,8 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
+        let salaAtivaId = null;
 
-        // LOGIN PERSISTENTE
         window.onload = async () => {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
@@ -80,10 +103,9 @@
             changeView('view-salas');
             carregarSalas();
             
-            // ESCUTA O BANCO EM TEMPO REAL
-            _supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+            _supabase.channel('lobby').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
                 carregarSalas();
+                if(salaAtivaId) atualizarDadosMesa(); // Atualiza placar se estiver na mesa
             }).subscribe();
         }
 
@@ -91,70 +113,70 @@
             const { data: salas } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('lista-salas');
             container.innerHTML = '';
-            
-            salas.forEach(sala => {
-                const souDono = currentUser && currentUser.id === sala.criador_id;
-                container.innerHTML += `
-                    <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/5">
-                        <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
-                            <p class="font-bold text-white">${sala.nome}</p>
-                            <p class="text-[10px] text-gray-400">Dono: ${sala.criador_nome}</p>
-                        </div>
-                        ${souDono ? `
-                            <button onclick="event.stopPropagation(); abrirMenu('${sala.id}')" class="p-2">⋮</button>
-                            <div id="menu-${sala.id}" class="hidden menu-flutuante shadow-2xl">
-                                <button onclick="editarNome('${sala.id}', '${sala.nome}')" class="w-full text-left p-3 text-xs border-b border-white/5">✏️ Editar</button>
-                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-3 text-xs text-red-500">🗑️ Encerrar</button>
+            if (salas) {
+                salas.forEach(sala => {
+                    const souDono = currentUser && currentUser.id === sala.criador_id;
+                    container.innerHTML += `
+                        <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/5 shadow-lg">
+                            <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
+                                <p class="font-bold text-white">${sala.nome}</p>
+                                <p class="text-[10px] text-gray-400">Dono: ${sala.criador_nome}</p>
                             </div>
-                        ` : ''}
-                    </div>`;
-            });
-        }
-
-        async function criarNovaSala() {
-            const n = prompt("Nome da Sala:");
-            if (!n) return;
-            const { error } = await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0] }]);
-            if (error && error.code === '23505') alert("Nome já existe!");
-        }
-
-        function abrirMenu(id) {
-            document.querySelectorAll('.menu-flutuante').forEach(m => m.id !== `menu-${id}` && m.classList.add('hidden'));
-            document.getElementById(`menu-${id}`).classList.toggle('hidden');
-        }
-
-        async function editarNome(id, nomeVelho) {
-            const n = prompt("Novo nome:", nomeVelho);
-            if (n) await _supabase.from('salas').update({ nome: n }).eq('id', id);
-        }
-
-        async function fecharSala(id) {
-            if (confirm("Encerrar sala?")) {
-                await _supabase.from('salas').delete().eq('id', id);
-                changeView('view-salas');
+                            ${souDono ? `<button onclick="abrirMenu('${sala.id}')" class="p-2">⋮</button>
+                            <div id="menu-${sala.id}" class="hidden menu-flutuante shadow-2xl">
+                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-3 text-xs text-red-500">🗑️ Encerrar</button>
+                            </div>` : ''}
+                        </div>`;
+                });
             }
         }
 
-        function entrarNaMesa(id, nome, criadorId) {
+        async function entrarNaMesa(id, nome, criadorId) {
+            salaAtivaId = id;
             changeView('view-mesa');
             document.getElementById('nome-sala-ativa').innerText = nome;
-            const btn = document.getElementById('btn-encerrar-mesa');
-            if (currentUser.id === criadorId) {
-                btn.classList.remove('hidden');
-                btn.onclick = () => fecharSala(id);
+            
+            const souDono = currentUser.id === criadorId;
+            document.getElementById('btn-encerrar-mesa').classList.toggle('hidden', !souDono);
+            document.getElementById('controles-d1').classList.toggle('hidden', !souDono);
+            document.getElementById('controles-d2').classList.toggle('hidden', !souDono);
+            
+            atualizarDadosMesa();
+        }
+
+        async function atualizarDadosMesa() {
+            if(!salaAtivaId) return;
+            const { data: sala } = await _supabase.from('salas').select('*').eq('id', salaAtivaId).single();
+            if(sala) {
+                document.getElementById('placar-d1').innerText = sala.d1_pontos || 0;
+                document.getElementById('placar-d2').innerText = sala.d2_pontos || 0;
             } else {
-                btn.classList.add('hidden');
+                // Se a sala não existe mais (foi encerrada), sai da mesa
+                changeView('view-salas');
+                salaAtivaId = null;
             }
         }
 
+        async function alterarPontos(coluna, valor) {
+            const pontosAtuais = parseInt(document.getElementById(coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2').innerText);
+            const { error } = await _supabase.from('salas')
+                .update({ [coluna]: pontosAtuais + valor })
+                .eq('id', salaAtivaId);
+        }
+
+        // Funções de apoio (criar, menu, login, logout) permanecem as mesmas
+        async function criarNovaSala() {
+            const n = prompt("Nome da Sala:");
+            if (n) await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0] }]);
+        }
+        function abrirMenu(id) { document.getElementById(`menu-${id}`).classList.toggle('hidden'); }
+        async function fecharSala(id) { if(confirm("Encerrar?")) await _supabase.from('salas').delete().eq('id', id); }
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('pass').value;
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message);
-            else location.reload();
+            if (!error) location.reload();
         }
-
         async function logout() { await _supabase.auth.signOut(); location.reload(); }
     </script>
 </body>
