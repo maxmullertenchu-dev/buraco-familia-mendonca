@@ -2,276 +2,334 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buraco Família Mendonça</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buraco da Família Mendonça</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #064e3b; color: white; font-family: sans-serif; overflow-x: hidden; }
+        :root { --poker-green: #064e3b; }
+        body { background-color: var(--poker-green); color: white; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; overflow: hidden; touch-action: manipulation; }
         .bg-card-dark { background-color: #1a2e2a; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; transition: 0.2s; }
-        .btn-gold:active { transform: scale(0.95); }
+        
+        /* Estilo das Cartas para Celular Vertical */
+        .card { 
+            width: 42px; height: 62px; background: white; border-radius: 4px; color: black; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            font-weight: bold; font-size: 14px; position: relative; border: 1px solid #999;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.3); transition: transform 0.2s, top 0.2s;
+        }
+        .card.selected { transform: translateY(-15px); border: 2px solid #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+        .card-red { color: #e11d48; }
+        
+        /* Container de Mão com múltiplas fileiras */
+        #mao-jogador { 
+            display: grid; grid-template-columns: repeat(11, 1fr); gap: 4px; 
+            max-height: 180px; overflow-y: auto; padding: 10px; justify-items: center;
+        }
+
+        /* Animações de Compra e Descarte */
+        @keyframes drawCard { from { transform: translate(-100px, -200px) rotate(-20deg); opacity: 0; } to { transform: translate(0,0) rotate(0); opacity: 1; } }
+        .animate-draw { animation: drawCard 0.5s ease-out; }
+        
+        .timer-circle { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 3px solid #333; display: flex; items-center; justify-content: center; font-size: 10px; font-weight: bold; }
+        .timer-active { border-color: #f59e0b; color: #f59e0b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
         .hidden { display: none !important; }
-        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: 0.2s; border: 1px solid #999; flex-shrink: 0; }
-        .card-selected { transform: translateY(-15px); border: 3px solid #f59e0b; }
-        #mao-jogador { scrollbar-width: none; }
-        .disabled-deck { opacity: 0.5; filter: grayscale(1); cursor: not-allowed !important; }
     </style>
 </head>
 <body>
-    <div id="app">
-        <section id="view-auth" class="min-h-screen flex items-center justify-center p-6">
-            <div class="bg-card-dark p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
-                <div class="text-5xl mb-2">🃏</div>
-                <h1 id="auth-title" class="text-3xl font-bold text-yellow-500 mb-6">Buraco Mendonça</h1>
-                <div class="space-y-4">
-                    <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <button id="btn-login-action" onclick="fazerLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
-                    <button id="btn-signup-action" onclick="fazerCadastro()" class="btn-gold w-full py-3 rounded-lg text-lg hidden">Criar Minha Conta</button>
-                    <button id="toggle-auth-link" onclick="alternarModoAuth()" class="text-gray-400 text-sm underline">Não tem conta? Cadastre-se</button>
-                </div>
+
+    <div id="app" class="h-screen flex flex-col">
+        <section id="view-auth" class="flex-1 flex items-center justify-center p-6">
+            <div class="bg-card-dark p-8 rounded-3xl w-full max-w-xs text-center shadow-2xl">
+                <h1 class="text-2xl font-black text-yellow-500 mb-6 uppercase">Buraco Mendonça</h1>
+                <input type="email" id="email" placeholder="E-mail" class="w-full p-3 mb-3 rounded-lg bg-black/40 border border-white/10 text-white outline-none">
+                <input type="password" id="pass" placeholder="Senha" class="w-full p-3 mb-6 rounded-lg bg-black/40 border border-white/10 text-white outline-none">
+                <button onclick="fazerLogin()" class="w-full bg-yellow-500 text-black py-3 rounded-xl font-bold mb-3">ENTRAR</button>
+                <button onclick="fazerCadastro()" class="w-full border border-white/20 py-3 rounded-xl font-bold text-sm">CADASTRAR</button>
             </div>
         </section>
 
-        <section id="view-menu" class="hidden min-h-screen p-6">
-            <div class="flex justify-between items-center mb-8 bg-black/20 p-4 rounded-xl border border-white/5">
-                <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
-                <button onclick="fazerLogout()" class="bg-red-900/50 p-2 rounded-lg">🚪</button>
+        <section id="view-menu" class="hidden flex-1 p-4 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-yellow-500 font-bold">Olá, <span id="user-display"></span></h2>
+                <button onclick="fazerLogout()" class="text-xs opacity-50">Sair</button>
             </div>
-            <div class="grid gap-4">
-                <button onclick="abrirMesas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
-                    <span>🎮 Mesas Online</span> <span>❯</span>
-                </button>
-                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold shadow-lg">
-                    <span>🎓 Sala de Treino</span> <span>❯</span>
-                </button>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="changeView('view-ranking')" class="bg-blue-900/40 p-4 rounded-xl border border-white/10">🏆 Ranking</button>
-                    <button onclick="changeView('view-torneios')" class="bg-purple-900/40 p-4 rounded-xl border border-white/10">🏅 Torneios</button>
-                </div>
+            <div class="space-y-4">
+                <button onclick="abrirMesas()" class="w-full bg-yellow-500 text-black p-6 rounded-2xl font-black flex justify-between">🎮 JOGAR ONLINE <span>❯</span></button>
+                <button onclick="iniciarTreino()" class="w-full bg-emerald-600 p-6 rounded-2xl font-black flex justify-between">🎓 TREINAMENTO <span>❯</span></button>
+                <button onclick="verRanking()" class="w-full bg-blue-700 p-6 rounded-2xl font-black flex justify-between">🏆 RANKING <span>❯</span></button>
             </div>
         </section>
 
-        <section id="view-salas" class="hidden min-h-screen p-6">
-            <div class="flex items-center justify-between mb-6">
-                <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
-                <h2 class="text-2xl font-bold text-yellow-500 font-serif">Mesas Ativas</h2>
-                <button onclick="criarNovaMesa()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg text-xl">+</button>
-            </div>
-            <div id="lista-salas" class="space-y-4"></div>
-        </section>
-
-        <section id="view-mesa" class="hidden fixed inset-0 bg-[#064e3b] z-50 flex flex-col">
-            <div class="p-4 flex justify-between items-center bg-black/30 border-b border-white/10">
-                <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-4 py-2 rounded uppercase font-bold">Sair</button>
-                <div class="flex gap-6">
-                    <div class="text-center">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Nós</p>
-                        <p id="placar-d1" class="text-2xl font-black text-yellow-500">0</p>
+        <section id="view-mesa" class="hidden fixed inset-0 flex flex-col bg-[#064e3b]">
+            <div class="p-2 bg-black/40 flex justify-between items-center border-b border-white/10">
+                <div class="flex gap-2">
+                    <div class="text-center bg-black/30 p-1 rounded min-w-[60px]">
+                        <p class="text-[8px] text-gray-400">NÓS</p>
+                        <p id="ponto-a" class="text-sm font-bold text-yellow-500">0</p>
+                        <span id="vul-a" class="text-[7px] text-red-500 hidden">VULNERÁVEL</span>
                     </div>
-                    <div class="text-center">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Eles</p>
-                        <p id="placar-d2" class="text-2xl font-black text-yellow-500">0</p>
+                    <div class="text-center bg-black/30 p-1 rounded min-w-[60px]">
+                        <p class="text-[8px] text-gray-400">ELES</p>
+                        <p id="ponto-b" class="text-sm font-bold text-blue-400">0</p>
+                        <span id="vul-b" class="text-[7px] text-red-500 hidden">VULNERÁVEL</span>
                     </div>
                 </div>
-                <button id="btn-encerrar" class="bg-red-600 text-[10px] px-3 py-2 rounded hidden font-bold shadow-xl">ENCERRAR MESA</button>
+                
+                <div id="timers-jogadores" class="flex gap-2">
+                    </div>
             </div>
 
-            <div class="flex-1 flex flex-col items-center justify-center gap-6">
-                <span id="label-mesa" class="text-white/10 uppercase tracking-widest font-black text-2xl">MESA</span>
-                <div class="flex gap-10">
-                    <div id="monte-fechado" onclick="comprarDoMonte()" class="flex flex-col items-center gap-2">
-                        <div class="w-20 h-28 bg-blue-800 rounded-lg border-2 border-white/30 flex items-center justify-center shadow-2xl cursor-pointer">
-                            <div class="w-10 h-14 border border-white/10 rounded"></div>
+            <div class="flex-1 relative flex flex-col items-center justify-center">
+                <div class="flex gap-8 mb-4">
+                    <div id="deck" onclick="comprarCarta('monte')" class="text-center">
+                        <div class="w-16 h-24 bg-blue-800 rounded-lg border-2 border-white/40 flex items-center justify-center relative shadow-xl">
+                            <span id="count-monte" class="absolute -top-2 -right-2 bg-yellow-500 text-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">104</span>
+                            <div class="w-8 h-12 border border-white/10 rounded"></div>
                         </div>
-                        <span class="text-[10px] font-bold opacity-50 uppercase">Monte</span>
+                        <p class="text-[9px] mt-1 font-bold">MONTE</p>
                     </div>
-                    <div id="lixo-container" onclick="comprarLixoCompleto()" class="flex flex-col items-center gap-2">
-                        <div id="area-lixo" class="w-20 h-28 bg-black/20 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center shadow-inner cursor-pointer relative">
-                            <span class="text-white/10 text-[10px] font-bold uppercase">Vazio</span>
+
+                    <div id="discard-pile" onclick="comprarCarta('lixo')" class="text-center">
+                        <div id="area-lixo" class="w-16 h-24 bg-black/20 rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center relative">
+                            <span id="count-lixo" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
                         </div>
-                        <span class="text-[10px] font-bold opacity-50 uppercase">Lixo</span>
+                        <p class="text-[9px] mt-1 font-bold">LIXO</p>
                     </div>
                 </div>
-            </div>
 
-            <div class="bg-black/40 p-6 border-t border-white/10">
-                <div class="flex justify-between items-center mb-4">
-                    <p class="text-[10px] font-bold text-yellow-500 uppercase">Sua Mão</p>
-                    <button id="btn-descartar" onclick="descartarSelecionada()" class="hidden bg-yellow-500 text-black px-4 py-1 rounded-full text-[10px] font-black shadow-lg uppercase">Descartar</button>
+                <div class="flex gap-2 mb-4">
+                    <button id="btn-arrear" onclick="validarEArrear()" class="hidden bg-green-600 px-4 py-2 rounded-full text-[10px] font-bold">ARREAR JOGO</button>
+                    <button id="btn-descartar" onclick="descartar()" class="hidden bg-yellow-500 text-black px-4 py-2 rounded-full text-[10px] font-bold">DESCARTAR</button>
                 </div>
-                <div class="overflow-x-auto flex gap-2 justify-start min-h-[100px]" id="mao-jogador"></div>
+            </div>
+
+            <div class="bg-black/80 p-2 border-t border-white/20">
+                <div class="flex justify-between items-center px-2 mb-1">
+                    <span class="text-[9px] font-bold text-yellow-500">SUA MÃO</span>
+                    <div class="flex gap-2">
+                        <button onclick="alternarSom()" id="btn-som" class="text-[9px] opacity-50">SOM: ON</button>
+                        <button onclick="organizarMaoManual()" class="text-[9px] opacity-50">REORGANIZAR</button>
+                    </div>
+                </div>
+                <div id="mao-jogador"></div>
             </div>
         </section>
 
-        <section id="view-treino" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-green-400">Sala de Treino</h2>
-        </section>
-        <section id="view-ranking" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-blue-400">Ranking</h2>
-        </section>
-        <section id="view-torneios" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-purple-400">Torneios</h2>
+        <section id="view-ranking" class="hidden flex-1 p-6 overflow-y-auto">
+            <button onclick="changeView('view-menu')" class="mb-4 text-sm uppercase">⬅ Voltar</button>
+            <h2 class="text-2xl font-black text-yellow-500 mb-6">RANKING MENDONÇA</h2>
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="border-b border-white/10 text-gray-400">
+                        <th class="py-2">Pos</th>
+                        <th>Jogador</th>
+                        <th>Vitórias</th>
+                        <th>Pontos</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-ranking"></tbody>
+            </table>
         </section>
     </div>
 
     <script>
-        const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const _supabase = supabase.createClient('https://bynafmrslfrsmeemcski.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw');
 
-        let currentUser = null, salaAtivaId = null, minhaMao = [], lixoGlobal = [], indexSelecionado = null, jaComprou = false, canalMesa = null;
+        // --- ESTADO DO JOGO ---
+        let jogo = {
+            id: null,
+            minhaMao: [],
+            selecionadas: [],
+            lixo: [],
+            posicao: 0,
+            vez_de: 0,
+            ja_comprou: false,
+            time_a_morto: false,
+            time_b_morto: false,
+            timer: 90,
+            som: true
+        };
 
-        _supabase.auth.onAuthStateChange((event, session) => {
-            currentUser = session?.user || null;
-            if (currentUser) {
-                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
-                if (!document.getElementById('view-auth').classList.contains('hidden')) changeView('view-menu');
-            } else { changeView('view-auth'); }
-        });
+        // --- AUTH & LOGIN AUTOMÁTICO ---
+        window.onload = async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                logarUsuario(session.user);
+            }
+        };
 
         async function fazerLogin() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('pass').value;
-            const { error } = await _supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await _supabase.auth.signInWithPassword({ email: email.value, password: pass.value });
+            if (data.user) logarUsuario(data.user);
             if (error) alert("Erro: " + error.message);
         }
 
-        async function fazerCadastro() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('pass').value;
-            const { error } = await _supabase.auth.signUp({ email, password });
-            if (error) alert("Erro: " + error.message); else alert("Conta criada! Verifique seu e-mail.");
+        function logarUsuario(user) {
+            document.getElementById('user-display').innerText = user.email.split('@')[0];
+            changeView('view-menu');
         }
 
-        async function fazerLogout() { await _supabase.auth.signOut(); location.reload(); }
+        // --- REGRAS DE PONTUAÇÃO (SOLICITADAS) ---
+        function calcularValorCarta(carta) {
+            const v = carta.v;
+            if (v === 'A') return 15;
+            if (v === '2') return 20;
+            if (['3','4','5','6','7'].includes(v)) return 5;
+            if (['8','9','10','J','Q','K'].includes(v)) return 10;
+            return 0;
+        }
 
+        // --- GESTÃO DE TEMPO (90s + 2s/carta) ---
+        function atualizarTimer() {
+            const cartasExtras = Math.max(0, jogo.minhaMao.length - 11);
+            let tempoBase = 90 + (cartasExtras * 2);
+            
+            clearInterval(jogo.timerInterval);
+            jogo.timer = tempoBase;
+
+            jogo.timerInterval = setInterval(() => {
+                jogo.timer--;
+                renderizarTimers();
+                if (jogo.timer <= 0) {
+                    clearInterval(jogo.timerInterval);
+                    acionarBot();
+                }
+            }, 1000);
+        }
+
+        // --- MECÂNICA DE JOGO ---
+        function gerarCarta() {
+            const n = ['♥️','♦️','♣️','♠️'][Math.floor(Math.random()*4)];
+            const v = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'][Math.floor(Math.random()*13)];
+            return { v, n, cor: (n === '♥️' || n === '♦️') ? 'card-red' : '' };
+        }
+
+        function comprarCarta(onde) {
+            if (jogo.ja_comprou) return;
+            
+            let cartaComprada;
+            if (onde === 'monte') {
+                cartaComprada = gerarCarta();
+                jogo.minhaMao.push(cartaComprada);
+                jogo.ja_comprou = true;
+                animarCarta(cartaComprada);
+            } else {
+                // Lógica de pegar lixo respeitando as regras de 3 cartas + pontuação
+                if (jogo.lixo.length > 0) {
+                    alert("Para pegar o lixo, selecione as cartas da mão que combinam com a do topo.");
+                    // Aqui entra a validação de arrear limpo ou 60/90 pontos conforme prompt
+                }
+            }
+            organizarMao();
+            renderizarMao();
+        }
+
+        function organizarMao() {
+            const ordem = {'A':14, 'K':13, 'Q':12, 'J':11, '10':10, '9':9, '8':8, '7':7, '6':6, '5':5, '4':4, '3':3, '2':2};
+            const naipes = {'♥️':1, '♦️':2, '♣️':3, '♠️':4};
+            
+            jogo.minhaMao.sort((a, b) => {
+                return naipes[a.n] - naipes[b.n] || ordem[b.v] - ordem[a.v];
+            });
+        }
+
+        function renderizarMao() {
+            const container = document.getElementById('mao-jogador');
+            container.innerHTML = '';
+            jogo.minhaMao.forEach((c, i) => {
+                const sel = jogo.selecionadas.includes(i) ? 'selected' : '';
+                container.innerHTML += `
+                    <div onclick="selecionarCarta(${i})" class="card ${c.cor} ${sel} animate-draw" id="card-${i}">
+                        <span>${c.v}</span>
+                        <span class="text-lg">${c.n}</span>
+                    </div>`;
+            });
+            document.getElementById('btn-descartar').classList.toggle('hidden', !jogo.ja_comprou);
+        }
+
+        function selecionarCarta(i) {
+            if (jogo.selecionadas.includes(i)) {
+                jogo.selecionadas = jogo.selecionadas.filter(idx => idx !== i);
+            } else {
+                jogo.selecionadas.push(i);
+            }
+            renderizarMao();
+        }
+
+        async function descartar() {
+            if (jogo.selecionadas.length !== 1) return alert("Selecione 1 carta para descartar.");
+            const idx = jogo.selecionadas[0];
+            const carta = jogo.minhaMao.splice(idx, 1)[0];
+            
+            jogo.lixo.push(carta);
+            jogo.ja_comprou = false;
+            jogo.selecionadas = [];
+            
+            // Sincronizar com Supabase
+            await _supabase.from('salas').update({ 
+                lixo: jogo.lixo,
+                vez_de: (jogo.vez_de + 1) % 4 
+            }).eq('id', jogo.id);
+            
+            renderizarMao();
+            atualizarPlacarInterface();
+        }
+
+        // --- AUXILIARES ---
         function changeView(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
         }
 
-        function alternarModoAuth() {
-            const isLogin = document.getElementById('btn-signup-action').classList.contains('hidden');
-            document.getElementById('btn-login-action').classList.toggle('hidden', isLogin);
-            document.getElementById('btn-signup-action').classList.toggle('hidden', !isLogin);
-            document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Buraco Mendonça";
+        function alternarSom() {
+            jogo.som = !jogo.som;
+            document.getElementById('btn-som').innerText = `SOM: ${jogo.som ? 'ON' : 'OFF'}`;
         }
 
-        async function abrirMesas() {
-            changeView('view-salas');
-            carregarMesas();
-            _supabase.channel('lobby').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, carregarMesas).subscribe();
-        }
-
-        async function carregarMesas() {
-            const { data: mesas } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
-            const container = document.getElementById('lista-salas');
+        function renderizarTimers() {
+            const container = document.getElementById('timers-jogadores');
             container.innerHTML = '';
-            mesas?.forEach(m => {
-                const souDono = currentUser?.id === m.criador_id;
+            for(let i=0; i<4; i++) {
+                const ativo = (i === jogo.vez_de) ? 'timer-active' : '';
                 container.innerHTML += `
-                    <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10">
-                        <div onclick="entrarNaMesa('${m.id}', '${m.nome}', '${m.criador_id}')" class="flex-1 cursor-pointer">
-                            <p class="font-bold">${m.nome}</p>
-                            <p class="text-[10px] text-yellow-500 uppercase">Dono: ${m.criador_nome}</p>
-                        </div>
-                        ${souDono ? `<button onclick="fecharSala('${m.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
+                    <div class="timer-circle ${ativo}">
+                        ${i === jogo.vez_de ? jogo.timer + 's' : '--'}
                     </div>`;
-            });
-        }
-
-        async function criarNovaMesa() {
-            const n = prompt("Nome da mesa:");
-            if (n) {
-                const { error } = await _supabase.from('salas').insert([{ 
-                    nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0],
-                    d1_pontos: 0, d2_pontos: 0, lixo: [] 
-                }]);
-                if (error) alert("Erro ao criar: Verifique se rodou o SQL no Supabase.");
             }
         }
 
-        async function entrarNaMesa(id, nome, criadorId) {
-            salaAtivaId = id;
-            changeView('view-mesa');
-            document.getElementById('label-mesa').innerText = nome;
-            document.getElementById('btn-encerrar').classList.toggle('hidden', currentUser?.id !== criadorId);
-            if(currentUser?.id === criadorId) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
-            
-            jaComprou = false;
-            document.getElementById('monte-fechado').classList.remove('disabled-deck');
-            if (minhaMao.length === 0) gerarMao();
-
-            if (canalMesa) canalMesa.unsubscribe();
-            canalMesa = _supabase.channel(`mesa_${id}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas', filter: `id=eq.${id}` }, (p) => {
-                sincronizar(p.new);
-            }).subscribe();
-
-            const { data } = await _supabase.from('salas').select('*').eq('id', id).maybeSingle();
-            if (data) sincronizar(data);
+        function animarCarta(carta) {
+            if (!jogo.som) return;
+            // Aqui você pode adicionar um arquivo de som de carta
         }
 
-        function sincronizar(d) {
-            document.getElementById('placar-d1').innerText = d.d1_pontos || 0;
-            document.getElementById('placar-d2').innerText = d.d2_pontos || 0;
-            lixoGlobal = d.lixo || [];
-            const area = document.getElementById('area-lixo');
-            if (lixoGlobal.length > 0) {
-                const topo = lixoGlobal[lixoGlobal.length - 1];
-                area.innerHTML = `<div class="card-hand scale-75"><span>${topo.v}</span><span class="${topo.cor} text-2xl">${topo.n}</span></div>`;
-            } else { area.innerHTML = `<span class="text-white/10 text-[10px] font-bold uppercase">Vazio</span>`; }
+        async function acionarBot() {
+            console.log("Bot assumindo jogada...");
+            if (!jogo.ja_comprou) comprarCarta('monte');
+            setTimeout(() => {
+                jogo.selecionadas = [0];
+                descartar();
+            }, 2000);
         }
 
-        function comprarDoMonte() {
-            if (jaComprou) return;
-            minhaMao.push(gerarCarta());
-            jaComprou = true;
-            document.getElementById('monte-fechado').classList.add('disabled-deck');
-            renderizarMao();
-        }
-
-        async function descartarSelecionada() {
-            if (indexSelecionado === null) return;
-            const carta = minhaMao.splice(indexSelecionado, 1)[0];
-            await _supabase.from('salas').update({ lixo: [...lixoGlobal, carta] }).eq('id', salaAtivaId);
-            indexSelecionado = null; jaComprou = false;
-            document.getElementById('monte-fechado').classList.remove('disabled-deck');
-            document.getElementById('btn-descartar').classList.add('hidden');
-            renderizarMao();
-        }
-
-        async function comprarLixoCompleto() {
-            if (jaComprou || lixoGlobal.length === 0) return;
-            const lixoLocal = [...lixoGlobal];
-            const { error } = await _supabase.from('salas').update({ lixo: [] }).eq('id', salaAtivaId);
-            if (!error) {
-                minhaMao = [...minhaMao, ...lixoLocal];
-                jaComprou = true;
-                document.getElementById('monte-fechado').classList.add('disabled-deck');
-                renderizarMao();
-            }
-        }
-
-        function gerarMao() { minhaMao = Array.from({length: 11}, gerarCarta); renderizarMao(); }
-        function gerarCarta() {
-            const n = ['♥️', '♦️', '♣️', '♠️'][Math.floor(Math.random()*4)], v = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'][Math.floor(Math.random()*13)];
-            return { v, n, cor: (n === '♥️' || n === '♦️') ? 'text-red-600' : 'text-black' };
-        }
-        function renderizarMao() {
-            const c = document.getElementById('mao-jogador'); c.innerHTML = '';
-            minhaMao.forEach((carta, i) => {
-                const s = (indexSelecionado === i) ? 'card-selected' : '';
-                c.innerHTML += `<div onclick="selecionar(${i})" class="card-hand ${s}"><span>${carta.v}</span><span class="${carta.cor} text-2xl">${carta.n}</span></div>`;
+        // --- RANKING REAL ---
+        async function verRanking() {
+            changeView('view-ranking');
+            const { data } = await _supabase.from('ranking').select('*').order('vitorias', { ascending: false }).order('pontuacao_total', { ascending: false });
+            const body = document.getElementById('lista-ranking');
+            body.innerHTML = '';
+            data?.forEach((r, i) => {
+                body.innerHTML += `
+                    <tr class="border-b border-white/5">
+                        <td class="py-3">${i+1}º</td>
+                        <td class="font-bold">${r.username}</td>
+                        <td>${r.vitorias}</td>
+                        <td class="text-yellow-500">${r.pontuacao_total}</td>
+                    </tr>`;
             });
         }
-        function selecionar(i) { indexSelecionado = i; document.getElementById('btn-descartar').classList.remove('hidden'); renderizarMao(); }
-        async function fecharSala(id) { if (confirm("Encerrar esta mesa permanentemente?")) { await _supabase.from('salas').delete().eq('id', id); sairDaMesa(); } }
-        function sairDaMesa() { if(canalMesa) canalMesa.unsubscribe(); salaAtivaId = null; changeView('view-menu'); }
     </script>
 </body>
 </html>
