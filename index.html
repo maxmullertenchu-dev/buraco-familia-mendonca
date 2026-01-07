@@ -84,6 +84,17 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
+        let isSignUp = false;
+
+        // 1. PERSISTÊNCIA DE LOGIN: Verifica sessão ao carregar a página
+        window.onload = async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
+                changeView('view-menu');
+            }
+        };
 
         function changeView(viewId) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -92,11 +103,11 @@
 
         async function abrirSalas() {
             changeView('view-salas');
-            carregarSalas();
+            await carregarSalas();
         }
 
         async function carregarSalas() {
-            const { data: salas, error } = await _supabase.from('salas').select('*');
+            const { data: salas, error } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('lista-salas');
             const semSalas = document.getElementById('sem-salas');
             
@@ -105,7 +116,7 @@
                 semSalas.classList.add('hidden');
                 salas.forEach(sala => {
                     container.innerHTML += `
-                        <div class="bg-card-dark p-6 rounded-2xl border-l-4 border-yellow-500 flex justify-between items-center">
+                        <div class="bg-card-dark p-6 rounded-2xl border-l-4 border-yellow-500 flex justify-between items-center shadow-lg">
                             <div>
                                 <h3 class="font-bold text-white">${sala.nome}</h3>
                                 <p class="text-[10px] text-gray-400">Por: ${sala.criador_nome}</p>
@@ -118,23 +129,29 @@
             }
         }
 
+        // 2. ATUALIZAÇÃO INSTANTÂNEA: Chama carregarSalas() logo após o insert
         async function criarNovaSala() {
             const nomeSala = prompt("Nome da Sala:", "Mesa Mendonça");
             if (!nomeSala) return;
 
-            const { data, error } = await _supabase.from('salas').insert([
-                { nome: nomeSala, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0] }
+            const { error } = await _supabase.from('salas').insert([
+                { 
+                    nome: nomeSala, 
+                    criador_id: currentUser.id, 
+                    criador_nome: currentUser.email.split('@')[0] 
+                }
             ]);
 
-            if (error) alert("Erro ao criar sala. Verifique se a tabela 'salas' existe no Supabase.");
-            else carregarSalas();
+            if (error) {
+                alert("Erro ao criar sala: " + error.message);
+            } else {
+                await carregarSalas(); // Atualiza a lista na tela imediatamente
+            }
         }
 
         function entrarNaMesa(salaId, criadorId) {
             changeView('view-mesa');
             const btnFechar = document.getElementById('btn-fechar-sala');
-            
-            // Só mostra botão de encerrar se for o criador
             if (currentUser.id === criadorId) {
                 btnFechar.classList.remove('hidden');
                 btnFechar.onclick = () => fecharSala(salaId);
@@ -148,7 +165,8 @@
             if (confirm("Deseja realmente encerrar esta sala?")) {
                 const { error } = await _supabase.from('salas').delete().eq('id', salaId);
                 if (error) alert("Erro ao fechar");
-                else abrirSalas();
+                else await carregarSalas(); 
+                changeView('view-salas');
             }
         }
 
@@ -160,7 +178,6 @@
             }
         }
 
-        // Funções de Auth permanecem as mesmas
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('pass').value;
@@ -173,8 +190,37 @@
             }
         }
 
-        function toggleAuthMode() { /* lógica de troca de texto */ }
-        async function logout() { await _supabase.auth.signOut(); changeView('view-auth'); }
+        async function handleSignup() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+            const { error } = await _supabase.auth.signUp({ email, password });
+            if (error) alert(error.message);
+            else alert("Verifique seu e-mail para confirmar o cadastro!");
+        }
+
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            const title = document.getElementById('auth-title');
+            const btn = document.getElementById('btn-principal');
+            const toggleBtn = document.getElementById('auth-toggle-btn');
+            if (isSignUp) {
+                title.innerText = "Criar Conta";
+                btn.innerText = "Cadastrar";
+                btn.setAttribute("onclick", "handleSignup()");
+                toggleBtn.innerText = "Já tem conta? Entrar";
+            } else {
+                title.innerText = "Buraco";
+                btn.innerText = "Entrar";
+                btn.setAttribute("onclick", "handleLogin()");
+                toggleBtn.innerText = "Não tem conta? Cadastre-se";
+            }
+        }
+
+        async function logout() { 
+            await _supabase.auth.signOut(); 
+            currentUser = null;
+            changeView('view-auth'); 
+        }
     </script>
 </body>
 </html>
