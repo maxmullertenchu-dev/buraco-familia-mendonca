@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #064e3b; color: white; font-family: sans-serif; }
+        body { background-color: #064e3b; color: white; font-family: sans-serif; overflow-x: hidden; }
         .bg-card-dark { background-color: #1a2e2a; border: 1px solid rgba(255,255,255,0.1); }
         .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; transition: all 0.2s; }
         .btn-gold:hover { background-color: #d97706; transform: scale(1.02); }
@@ -17,73 +17,117 @@
 <body>
     <div id="app">
         <section id="view-auth" class="min-h-screen flex items-center justify-center p-6">
-            <div class="bg-card-dark p-8 rounded-2xl w-full max-w-sm text-center">
+            <div class="bg-card-dark p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
                 <div class="text-5xl mb-2">🃏</div>
-                <h1 class="text-3xl font-bold text-yellow-500">Buraco</h1>
-                <p class="text-gray-300 mb-6">Família Mendonça</p>
+                <h1 id="auth-title" class="text-3xl font-bold text-yellow-500">Buraco</h1>
+                <p id="auth-subtitle" class="text-gray-300 mb-6">Família Mendonça</p>
+                
                 <div class="space-y-4">
-                    <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <button onclick="handleLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
-                    <button onclick="handleSignup()" class="text-gray-400 text-sm hover:text-white">Não tem conta? Cadastre-se</button>
+                    <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none focus:border-yellow-500">
+                    <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none focus:border-yellow-500">
+                    
+                    <button id="btn-principal" onclick="handleLogin()" class="btn-gold w-full py-3 rounded-lg text-lg shadow-lg">Entrar</button>
+                    
+                    <button id="auth-toggle-btn" onclick="toggleAuthMode()" class="text-gray-400 text-sm hover:text-white underline decoration-dotted">
+                        Não tem conta? Cadastre-se
+                    </button>
                 </div>
             </div>
         </section>
 
         <section id="view-menu" class="hidden min-h-screen p-6">
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex justify-between items-center mb-8 bg-black/20 p-4 rounded-xl">
                 <div>
-                    <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
+                    <p class="text-yellow-500 font-bold text-lg">Olá, <span id="user-display">Jogador</span></p>
                     <div class="flex gap-4 text-xs mt-1 text-gray-300">
                         <span><strong>0</strong> Vitórias</span>
                         <span><strong>0</strong> Pontos</span>
                     </div>
                 </div>
-                <button onclick="logout()" class="text-xl">🚪</button>
+                <button onclick="logout()" class="bg-red-900/50 p-2 rounded-lg text-xl">🚪</button>
             </div>
 
-            <div class="space-y-4">
-                <button onclick="changeView('view-salas')" class="btn-gold w-full p-4 rounded-xl flex items-center gap-4 text-lg">
-                    <span>🎮</span> Jogar Online
+            <div class="grid gap-4">
+                <button onclick="changeView('view-salas')" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
+                    <span class="flex items-center gap-4 text-lg"><span>🎮</span> Jogar Online</span>
+                    <span>❯</span>
                 </button>
-                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-4 rounded-xl flex items-center gap-4 text-lg font-bold">
-                    <span>🎓</span> Sala de Treino
+                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between text-white font-bold shadow-lg">
+                    <span class="flex items-center gap-4 text-lg"><span>🎓</span> Sala de Treino</span>
+                    <span>❯</span>
                 </button>
-                <button onclick="changeView('view-ranking')" class="w-full bg-[#10b981] p-4 rounded-xl flex items-center gap-4 text-lg font-bold">
-                    <span>🏆</span> Ranking
+                <button onclick="changeView('view-ranking')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between text-white font-bold shadow-lg">
+                    <span class="flex items-center gap-4 text-lg"><span>🏆</span> Ranking</span>
+                    <span>❯</span>
                 </button>
             </div>
         </section>
 
         <section id="view-treino" class="hidden min-h-screen p-6 text-center flex flex-col items-center justify-center">
-            <button onclick="changeView('view-menu')" class="absolute top-6 left-6 text-2xl">⬅️</button>
-            <div class="text-6xl mb-4">🎓</div>
-            <h2 class="text-2xl font-bold text-yellow-500 mb-2">Sala de Treino</h2>
-            <p class="text-gray-300 mb-8 max-w-xs">Pratique contra bots e domine as estratégias do Buraco!</p>
-            <button onclick="alert('Iniciando mesa de treino...')" class="btn-gold px-12 py-4 rounded-xl text-lg mb-4 w-full max-w-xs">Iniciar Treino</button>
-            <button class="w-full max-w-xs border border-yellow-500/50 p-4 rounded-xl text-yellow-500 font-bold">Rever Tutorial</button>
+            <button onclick="changeView('view-menu')" class="absolute top-6 left-6 bg-white/10 p-2 rounded-full text-xl">⬅️</button>
+            <div class="text-7xl mb-4">🎓</div>
+            <h2 class="text-3xl font-bold text-yellow-500 mb-2">Aprenda a Jogar</h2>
+            <p class="text-gray-300 mb-8 max-w-xs text-sm">Pratique contra bots inteligentes e domine as estratégias antes de enfrentar a família!</p>
+            <button onclick="alert('Iniciando mesa de treino...')" class="btn-gold px-12 py-4 rounded-xl text-lg mb-4 w-full max-w-xs shadow-xl">Iniciar Treino</button>
+            <button class="w-full max-w-xs border border-yellow-500/50 p-4 rounded-xl text-yellow-500 font-bold hover:bg-yellow-500/10">Rever Tutorial</button>
         </section>
     </div>
 
     <script>
-        // CONFIGURAÇÃO SUPABASE (Utilizando suas chaves já configuradas)
-        const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co'; //
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw'; // Pegue na aba API Keys
+        // CONFIGURAÇÃO SUPABASE
+        const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co'; 
+        const supabaseKey = 'SUA_CHAVE_ANON_VAI_AQUI'; 
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let isSignUp = false;
 
         function changeView(viewId) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
         }
 
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            const title = document.getElementById('auth-title');
+            const btn = document.getElementById('btn-principal');
+            const toggleBtn = document.getElementById('auth-toggle-btn');
+
+            if (isSignUp) {
+                title.innerText = "Criar Conta";
+                btn.innerText = "Cadastrar";
+                btn.setAttribute("onclick", "handleSignup()");
+                toggleBtn.innerText = "Já tem conta? Entrar";
+            } else {
+                title.innerText = "Buraco";
+                btn.innerText = "Entrar";
+                btn.setAttribute("onclick", "handleLogin()");
+                toggleBtn.innerText = "Não tem conta? Cadastre-se";
+            }
+        }
+
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('pass').value;
+            if(!email || !password) return alert("Preencha todos os campos!");
+
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
             if (error) alert("Erro: " + error.message);
             else {
                 document.getElementById('user-display').innerText = data.user.email.split('@')[0];
                 changeView('view-menu');
+            }
+        }
+
+        async function handleSignup() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+            if(!email || !password) return alert("Preencha todos os campos!");
+
+            const { data, error } = await _supabase.auth.signUp({ email, password });
+            if (error) alert("Erro ao cadastrar: " + error.message);
+            else {
+                alert("Cadastro realizado com sucesso! Agora você pode entrar.");
+                toggleAuthMode();
             }
         }
 
