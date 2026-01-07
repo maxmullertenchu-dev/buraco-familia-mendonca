@@ -9,11 +9,10 @@
     <style>
         body { background-color: #064e3b; color: white; font-family: sans-serif; overflow-x: hidden; }
         .bg-card-dark { background-color: #1a2e2a; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; transition: all 0.2s; }
-        .btn-gold:hover { background-color: #d97706; transform: scale(1.02); }
-        .hidden { display: none; }
+        .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; }
+        .hidden { display: none !important; }
         .menu-flutuante { position: absolute; right: 10px; top: 45px; background: #1a2e2a; border: 1px solid #f59e0b; border-radius: 8px; z-index: 100; min-width: 120px; }
-        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #ccc; font-weight: bold; }
+        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -22,43 +21,36 @@
             <div class="bg-card-dark p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
                 <div class="text-5xl mb-2">🃏</div>
                 <h1 id="auth-title" class="text-3xl font-bold text-yellow-500 mb-6">Buraco Mendonça</h1>
+                
                 <div class="space-y-4">
                     <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
                     <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <button id="btn-auth-principal" onclick="authAction()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
-                    <button id="auth-toggle-btn" onclick="toggleAuthMode()" class="text-gray-400 text-sm hover:text-white underline">Não tem conta? Cadastre-se</button>
+                    
+                    <button id="btn-login-action" onclick="fazerLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
+                    
+                    <button id="btn-signup-action" onclick="fazerCadastro()" class="btn-gold w-full py-3 rounded-lg text-lg hidden">Criar Minha Conta</button>
+                    
+                    <button id="toggle-auth-link" onclick="alternarModoAuth()" class="text-gray-400 text-sm underline">Não tem conta? Cadastre-se</button>
                 </div>
             </div>
         </section>
 
         <section id="view-menu" class="hidden min-h-screen p-6">
             <div class="flex justify-between items-center mb-8 bg-black/20 p-4 rounded-xl">
-                <div>
-                    <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
-                </div>
-                <button onclick="logout()" class="bg-red-900/50 p-2 rounded-lg text-xl">🚪</button>
+                <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
+                <button onclick="fazerLogout()" class="bg-red-900/50 p-2 rounded-lg">🚪</button>
             </div>
             
             <div class="grid gap-4">
-                <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
-                    <span class="flex items-center gap-4 text-lg"><span>🎮</span> Jogar Online</span>
-                    <span>❯</span>
+                <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between">
+                    <span>🎮 Jogar Online</span> <span>❯</span>
                 </button>
-                
-                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold shadow-lg">
-                    <span class="flex items-center gap-4 text-lg"><span>🎓</span> Sala de Treino</span>
-                    <span>❯</span>
+                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold">
+                    <span>🎓 Sala de Treino</span> <span>❯</span>
                 </button>
-
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="changeView('view-ranking')" class="bg-blue-900/40 p-4 rounded-xl border border-white/10 flex flex-col items-center">
-                        <span class="text-2xl mb-1">🏆</span>
-                        <span class="text-xs uppercase font-bold">Ranking</span>
-                    </button>
-                    <button onclick="changeView('view-torneios')" class="bg-purple-900/40 p-4 rounded-xl border border-white/10 flex flex-col items-center">
-                        <span class="text-2xl mb-1">🏅</span>
-                        <span class="text-xs uppercase font-bold">Torneios</span>
-                    </button>
+                    <button onclick="changeView('view-ranking')" class="bg-blue-900/40 p-4 rounded-xl border border-white/10">🏆 Ranking</button>
+                    <button onclick="changeView('view-torneios')" class="bg-purple-900/40 p-4 rounded-xl border border-white/10">🏅 Torneios</button>
                 </div>
             </div>
         </section>
@@ -67,7 +59,7 @@
             <div class="flex items-center justify-between mb-6">
                 <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
                 <h2 class="text-2xl font-bold text-yellow-500">Lobby</h2>
-                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg">+</button>
+                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold">+</button>
             </div>
             <div id="lista-salas" class="space-y-4"></div>
         </section>
@@ -75,118 +67,174 @@
         <section id="view-mesa" class="hidden fixed inset-0 bg-[#064e3b] z-50 flex flex-col">
             <div class="p-4 flex justify-between items-center bg-black/20 border-b border-white/10">
                 <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-3 py-1 rounded">SAIR</button>
-                
                 <div class="flex gap-4">
                     <div class="text-center bg-black/30 px-3 py-1 rounded border border-white/10">
-                        <p class="text-[8px] text-gray-400 uppercase">Dupla 1</p>
+                        <p class="text-[8px] text-gray-400">D1</p>
                         <p id="placar-d1" class="text-lg font-bold text-yellow-500">0</p>
-                        <div id="controles-d1" class="hidden flex gap-2 mt-1">
-                            <button onclick="alterarPontos('d1_pontos', -10)" class="bg-red-900 px-2 rounded text-xs">-</button>
-                            <button onclick="alterarPontos('d1_pontos', 10)" class="bg-green-900 px-2 rounded text-xs">+</button>
-                        </div>
+                        <div id="ctrl-d1" class="hidden flex gap-2"><button onclick="pontuar('d1_pontos',-10)">-</button><button onclick="pontuar('d1_pontos',10)">+</button></div>
                     </div>
                     <div class="text-center bg-black/30 px-3 py-1 rounded border border-white/10">
-                        <p class="text-[8px] text-gray-400 uppercase">Dupla 2</p>
+                        <p class="text-[8px] text-gray-400">D2</p>
                         <p id="placar-d2" class="text-lg font-bold text-yellow-500">0</p>
-                        <div id="controles-d2" class="hidden flex gap-2 mt-1">
-                            <button onclick="alterarPontos('d2_pontos', -10)" class="bg-red-900 px-2 rounded text-xs">-</button>
-                            <button onclick="alterarPontos('d2_pontos', 10)" class="bg-green-900 px-2 rounded text-xs">+</button>
-                        </div>
+                        <div id="ctrl-d2" class="hidden flex gap-2"><button onclick="pontuar('d2_pontos',-10)">-</button><button onclick="pontuar('d2_pontos',10)">+</button></div>
                     </div>
                 </div>
-
-                <button id="btn-encerrar-mesa" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded hidden uppercase font-bold">Encerrar</button>
+                <button id="btn-encerrar" class="bg-red-600 text-[10px] px-2 py-1 rounded hidden">ENCERRAR</button>
             </div>
-            <div class="flex-1 flex flex-col items-center justify-center">
-                <h3 id="nome-sala-ativa" class="text-white/20 uppercase tracking-widest text-sm mb-4">Mesa</h3>
-                <div class="text-7xl">🎴</div>
-            </div>
-            <div class="bg-black/40 p-4 border-t border-white/10 overflow-x-auto">
-                <div id="mao-jogador" class="flex gap-1 justify-center"></div>
-            </div>
+            <div class="flex-1 flex items-center justify-center text-7xl">🎴</div>
+            <div class="bg-black/40 p-4 overflow-x-auto flex gap-1 justify-center" id="mao-jogador"></div>
         </section>
 
-        <section id="view-treino" class="hidden min-h-screen p-6">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-green-400 mb-4">Sala de Treino</h2>
-            <p class="text-gray-400">Pratique suas jogadas aqui.</p>
+        <section id="view-treino" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')">⬅️ Voltar</button>
+            <h2 class="text-2xl mt-10">Sala de Treino (Em breve)</h2>
         </section>
-
-        <section id="view-ranking" class="hidden min-h-screen p-6">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-blue-400 mb-4">Ranking</h2>
-            <p class="text-gray-400">Em breve o ranking dos melhores da família.</p>
+        <section id="view-ranking" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')">⬅️ Voltar</button>
+            <h2 class="text-2xl mt-10">Ranking (Em breve)</h2>
         </section>
-
-        <section id="view-torneios" class="hidden min-h-screen p-6">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-purple-400 mb-4">Torneios</h2>
-            <p class="text-gray-400">Participe dos torneios mensais.</p>
+        <section id="view-torneios" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')">⬅️ Voltar</button>
+            <h2 class="text-2xl mt-10">Torneios (Em breve)</h2>
         </section>
     </div>
 
     <script>
-        const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co'; 
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw'; 
+        const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
         let salaAtivaId = null;
-        let isSignUpMode = false;
 
-        // INICIALIZAÇÃO
+        // --- SISTEMA DE NAVEGAÇÃO ---
+        function changeView(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // --- SISTEMA DE AUTENTICAÇÃO ---
         window.addEventListener('load', async () => {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
                 currentUser = session.user;
                 document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
                 changeView('view-menu');
-            } else {
-                changeView('view-auth');
             }
         });
 
-        function changeView(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        // LÓGICA DE LOGIN/CADASTRO UNIFICADA
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            document.getElementById('auth-title').innerText = isSignUpMode ? "Criar Conta" : "Buraco Mendonça";
-            document.getElementById('btn-auth-principal').innerText = isSignUpMode ? "Cadastrar" : "Entrar";
-            document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? "Já tem conta? Entrar" : "Não tem conta? Cadastre-se";
-        }
-
-        async function authAction() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('pass').value;
-            if (!email || !password) return alert("Preencha e-mail e senha.");
-
-            if (isSignUpMode) {
-                const { data, error } = await _supabase.auth.signUp({ email, password });
-                if (error) alert("Erro: " + error.message);
-                else alert("Cadastro realizado! Verifique seu e-mail ou faça login.");
+        function alternarModoAuth() {
+            const isLogin = document.getElementById('btn-signup-action').classList.contains('hidden');
+            if (isLogin) {
+                document.getElementById('auth-title').innerText = "Criar Conta";
+                document.getElementById('btn-login-action').classList.add('hidden');
+                document.getElementById('btn-signup-action').classList.remove('hidden');
+                document.getElementById('toggle-auth-link').innerText = "Já tem conta? Entrar";
             } else {
-                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-                if (error) alert("Erro: " + error.message);
-                else {
-                    currentUser = data.user;
-                    document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
-                    changeView('view-menu');
-                }
+                document.getElementById('auth-title').innerText = "Buraco Mendonça";
+                document.getElementById('btn-login-action').classList.remove('hidden');
+                document.getElementById('btn-signup-action').classList.add('hidden');
+                document.getElementById('toggle-auth-link').innerText = "Não tem conta? Cadastre-se";
             }
         }
 
-        async function logout() {
+        async function fazerLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('pass').value;
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+            if (error) alert(error.message);
+            else { currentUser = data.user; location.reload(); }
+        }
+
+        async function fazerCadastro() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('pass').value;
+            const { error } = await _supabase.auth.signUp({ email, password });
+            if (error) alert(error.message);
+            else alert("Cadastro realizado! Verifique seu e-mail.");
+        }
+
+        async function fazerLogout() {
             await _supabase.auth.signOut();
             window.location.replace(window.location.pathname);
         }
 
-        // SALAS E REALTIME
+        // --- SISTEMA DE SALAS ---
         async function abrirSalas() {
             changeView('view-salas');
             carregarSalas();
-            _supabase.channel('lobby-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
-                car
+            _supabase.channel('public:salas').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+                carregarSalas();
+                if(salaAtivaId) atualizarDadosMesa();
+            }).subscribe();
+        }
+
+        async function carregarSalas() {
+            const { data: salas } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('lista-salas');
+            container.innerHTML = '';
+            if (salas) {
+                salas.forEach(sala => {
+                    const souDono = currentUser && currentUser.id === sala.criador_id;
+                    container.innerHTML += `
+                        <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/5">
+                            <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1">
+                                <p class="font-bold">${sala.nome}</p>
+                                <p class="text-[10px] text-gray-400">Dono: ${sala.criador_nome}</p>
+                            </div>
+                            ${souDono ? `<button onclick="document.getElementById('m-${sala.id}').classList.toggle('hidden')">⋮</button>
+                            <div id="m-${sala.id}" class="hidden menu-flutuante"><button onclick="fecharSala('${sala.id}')" class="p-3 text-red-500">Encerrar</button></div>` : ''}
+                        </div>`;
+                });
+            }
+        }
+
+        async function entrarNaMesa(id, nome, criadorId) {
+            salaAtivaId = id;
+            changeView('view-mesa');
+            const souDono = currentUser.id === criadorId;
+            document.getElementById('btn-encerrar').classList.toggle('hidden', !souDono);
+            if(souDono) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
+            document.getElementById('ctrl-d1').classList.toggle('hidden', !souDono);
+            document.getElementById('ctrl-d2').classList.toggle('hidden', !souDono);
+            atualizarDadosMesa();
+            renderMao();
+        }
+
+        async function atualizarDadosMesa() {
+            if(!salaAtivaId) return;
+            const { data: sala } = await _supabase.from('salas').select('*').eq('id', salaAtivaId).maybeSingle();
+            if(sala) {
+                document.getElementById('placar-d1').innerText = sala.d1_pontos || 0;
+                document.getElementById('placar-d2').innerText = sala.d2_pontos || 0;
+            } else { salaAtivaId = null; changeView('view-salas'); }
+        }
+
+        async function pontuar(col, val) {
+            const p = parseInt(document.getElementById(col === 'd1_pontos' ? 'placar-d1' : 'placar-d2').innerText);
+            await _supabase.from('salas').update({ [col]: p + val }).eq('id', salaAtivaId);
+        }
+
+        async function criarNovaSala() {
+            const n = prompt("Nome da Sala:");
+            if (n) await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0] }]);
+        }
+
+        async function fecharSala(id) {
+            if (confirm("Encerrar mesa?")) {
+                await _supabase.from('salas').delete().eq('id', id);
+                salaAtivaId = null;
+                changeView('view-salas');
+            }
+        }
+
+        function renderMao() {
+            const m = document.getElementById('mao-jogador');
+            m.innerHTML = '';
+            for(let i=0; i<11; i++) m.innerHTML += `<div class="card-hand">A<span class="text-red-600">♥️</span></div>`;
+        }
+
+        function sairDaMesa() { salaAtivaId = null; changeView('view-salas'); }
+    </script>
+</body>
+</html>
