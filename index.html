@@ -1,30 +1,96 @@
-<div id="fluxo-jogo">
-  
-  <section id="tela-auth" class="bg-[#064e3b] min-h-screen flex items-center justify-center p-4">
-    <div class="bg-[#1a2e2a] p-8 rounded-2xl w-full max-w-sm text-center border border-white/10">
-      <img src="coringa_icon.png" class="w-12 mx-auto mb-2">
-      <h1 class="text-3xl font-bold text-yellow-500">Buraco</h1>
-      <p class="text-white mb-6">Família Mendonça</p>
-      <button onclick="logar()" class="bg-yellow-500 w-full py-3 rounded-xl font-bold">Entrar</button>
-    </div>
-  </section>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buraco Família Mendonça</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #064e3b; color: white; font-family: sans-serif; }
+        .bg-card-dark { background-color: #1a2e2a; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; transition: all 0.2s; }
+        .btn-gold:hover { background-color: #d97706; transform: scale(1.02); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <section id="view-auth" class="min-h-screen flex items-center justify-center p-6">
+            <div class="bg-card-dark p-8 rounded-2xl w-full max-w-sm text-center">
+                <div class="text-5xl mb-2">🃏</div>
+                <h1 class="text-3xl font-bold text-yellow-500">Buraco</h1>
+                <p class="text-gray-300 mb-6">Família Mendonça</p>
+                <div class="space-y-4">
+                    <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
+                    <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
+                    <button onclick="handleLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
+                    <button onclick="handleSignup()" class="text-gray-400 text-sm hover:text-white">Não tem conta? Cadastre-se</button>
+                </div>
+            </div>
+        </section>
 
-  <section id="tela-menu" class="hidden bg-[#064e3b] min-h-screen p-6">
-    <div class="flex justify-between items-center text-yellow-500 mb-8">
-      <span>Olá, Maxmüller</span>
-      <button onclick="logout()">Logout</button>
-    </div>
-    <div class="space-y-4">
-      <button onclick="irPara('tela-salas')" class="w-full bg-yellow-500 p-4 rounded-xl flex items-center gap-4 font-bold"><span class="icon">🎮</span> Jogar Online</button>
-      <button onclick="irPara('tela-treino')" class="w-full bg-[#10b981] p-4 rounded-xl flex items-center gap-4 text-white font-bold"><span class="icon">🎓</span> Sala de Treino</button>
-      <button onclick="irPara('tela-ranking')" class="w-full bg-[#10b981] p-4 rounded-xl flex items-center gap-4 text-white font-bold"><span class="icon">🏆</span> Ranking</button>
-    </div>
-  </section>
+        <section id="view-menu" class="hidden min-h-screen p-6">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
+                    <div class="flex gap-4 text-xs mt-1 text-gray-300">
+                        <span><strong>0</strong> Vitórias</span>
+                        <span><strong>0</strong> Pontos</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="text-xl">🚪</button>
+            </div>
 
-  <section id="tela-treino" class="hidden bg-[#064e3b] min-h-screen flex flex-col items-center justify-center p-6">
-    <h2 class="text-yellow-500 text-2xl font-bold mb-4">Sala de Treino</h2>
-    <p class="text-white text-center mb-8">Pratique contra bots e domine as estratégias!</p>
-    <button onclick="iniciarJogo(true)" class="bg-yellow-500 px-12 py-4 rounded-xl font-bold mb-4">Iniciar Treino</button>
-  </section>
+            <div class="space-y-4">
+                <button onclick="changeView('view-salas')" class="btn-gold w-full p-4 rounded-xl flex items-center gap-4 text-lg">
+                    <span>🎮</span> Jogar Online
+                </button>
+                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-4 rounded-xl flex items-center gap-4 text-lg font-bold">
+                    <span>🎓</span> Sala de Treino
+                </button>
+                <button onclick="changeView('view-ranking')" class="w-full bg-[#10b981] p-4 rounded-xl flex items-center gap-4 text-lg font-bold">
+                    <span>🏆</span> Ranking
+                </button>
+            </div>
+        </section>
 
-</div>
+        <section id="view-treino" class="hidden min-h-screen p-6 text-center flex flex-col items-center justify-center">
+            <button onclick="changeView('view-menu')" class="absolute top-6 left-6 text-2xl">⬅️</button>
+            <div class="text-6xl mb-4">🎓</div>
+            <h2 class="text-2xl font-bold text-yellow-500 mb-2">Sala de Treino</h2>
+            <p class="text-gray-300 mb-8 max-w-xs">Pratique contra bots e domine as estratégias do Buraco!</p>
+            <button onclick="alert('Iniciando mesa de treino...')" class="btn-gold px-12 py-4 rounded-xl text-lg mb-4 w-full max-w-xs">Iniciar Treino</button>
+            <button class="w-full max-w-xs border border-yellow-500/50 p-4 rounded-xl text-yellow-500 font-bold">Rever Tutorial</button>
+        </section>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO SUPABASE (Utilizando suas chaves já configuradas)
+        const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co'; //
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw'; // Pegue na aba API Keys
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function changeView(viewId) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+            if (error) alert("Erro: " + error.message);
+            else {
+                document.getElementById('user-display').innerText = data.user.email.split('@')[0];
+                changeView('view-menu');
+            }
+        }
+
+        async function logout() {
+            await _supabase.auth.signOut();
+            changeView('view-auth');
+        }
+    </script>
+</body>
+</html>
