@@ -12,10 +12,8 @@
         .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; transition: 0.2s; }
         .btn-gold:active { transform: scale(0.95); }
         .hidden { display: none !important; }
-        .menu-flutuante { position: absolute; right: 10px; top: 45px; background: #1a2e2a; border: 1px solid #f59e0b; border-radius: 8px; z-index: 100; min-width: 120px; }
         .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: 0.2s; border: 1px solid #999; flex-shrink: 0; }
         .card-selected { transform: translateY(-15px); border: 3px solid #f59e0b; }
-        #mao-jogador { scrollbar-width: none; }
         .disabled-deck { opacity: 0.5; filter: grayscale(1); cursor: not-allowed !important; }
     </style>
 </head>
@@ -28,8 +26,8 @@
                 <div class="space-y-4">
                     <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
                     <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <button id="btn-login-action" onclick="fazerLogin()" class="btn-gold w-full py-3 rounded-lg text-lg shadow-lg">Entrar</button>
-                    <button id="btn-signup-action" onclick="fazerCadastro()" class="btn-gold w-full py-3 rounded-lg text-lg hidden shadow-lg">Criar Minha Conta</button>
+                    <button id="btn-login-action" onclick="fazerLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
+                    <button id="btn-signup-action" onclick="fazerCadastro()" class="btn-gold w-full py-3 rounded-lg text-lg hidden">Criar Minha Conta</button>
                     <button id="toggle-auth-link" onclick="alternarModoAuth()" class="text-gray-400 text-sm underline">Não tem conta? Cadastre-se</button>
                 </div>
             </div>
@@ -41,24 +39,20 @@
                 <button onclick="fazerLogout()" class="bg-red-900/50 p-2 rounded-lg">🚪</button>
             </div>
             <div class="grid gap-4">
-                <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
-                    <span>🎮 Jogar Online</span> <span>❯</span>
+                <button onclick="abrirMesas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
+                    <span>🎮 Mesas Online</span> <span>❯</span>
                 </button>
                 <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold shadow-lg">
                     <span>🎓 Sala de Treino</span> <span>❯</span>
                 </button>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="changeView('view-ranking')" class="bg-blue-900/40 p-4 rounded-xl border border-white/10">🏆 Ranking</button>
-                    <button onclick="changeView('view-torneios')" class="bg-purple-900/40 p-4 rounded-xl border border-white/10">🏅 Torneios</button>
-                </div>
             </div>
         </section>
 
         <section id="view-salas" class="hidden min-h-screen p-6">
             <div class="flex items-center justify-between mb-6">
                 <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
-                <h2 class="text-2xl font-bold text-yellow-500 font-serif">Salas Ativas</h2>
-                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg text-xl">+</button>
+                <h2 class="text-2xl font-bold text-yellow-500 font-serif">Mesas Ativas</h2>
+                <button onclick="criarNovaMesa()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg text-xl">+</button>
             </div>
             <div id="lista-salas" class="space-y-4"></div>
         </section>
@@ -70,18 +64,10 @@
                     <div class="text-center">
                         <p class="text-[10px] text-gray-400 font-bold uppercase">Nós</p>
                         <p id="placar-d1" class="text-2xl font-black text-yellow-500">0</p>
-                        <div id="ctrl-d1" class="hidden flex gap-3 mt-1">
-                            <button onclick="pontuar('d1_pontos', -10)" class="bg-red-600/40 w-6 h-6 rounded-full border border-red-500 text-xs">-</button>
-                            <button onclick="pontuar('d1_pontos', 10)" class="bg-green-600/40 w-6 h-6 rounded-full border border-green-500 text-xs">+</button>
-                        </div>
                     </div>
                     <div class="text-center">
                         <p class="text-[10px] text-gray-400 font-bold uppercase">Eles</p>
                         <p id="placar-d2" class="text-2xl font-black text-yellow-500">0</p>
-                        <div id="ctrl-d2" class="hidden flex gap-3 mt-1">
-                            <button onclick="pontuar('d2_pontos', -10)" class="bg-red-600/40 w-6 h-6 rounded-full border border-red-500 text-xs">-</button>
-                            <button onclick="pontuar('d2_pontos', 10)" class="bg-green-600/40 w-6 h-6 rounded-full border border-green-500 text-xs">+</button>
-                        </div>
                     </div>
                 </div>
                 <button id="btn-encerrar" class="bg-red-600 text-[10px] px-3 py-2 rounded hidden font-bold shadow-xl">ENCERRAR MESA</button>
@@ -96,7 +82,7 @@
                         </div>
                         <span class="text-[10px] font-bold opacity-50 uppercase">Monte</span>
                     </div>
-                    <div onclick="comprarLixoCompleto()" class="flex flex-col items-center gap-2">
+                    <div id="area-lixo-container" onclick="comprarLixoCompleto()" class="flex flex-col items-center gap-2">
                         <div id="area-lixo" class="w-20 h-28 bg-black/20 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center shadow-inner cursor-pointer relative">
                             <span class="text-white/10 text-[10px] uppercase font-bold">Lixo</span>
                         </div>
@@ -113,24 +99,11 @@
                 <div class="overflow-x-auto flex gap-2 justify-start min-h-[100px]" id="mao-jogador"></div>
             </div>
         </section>
-
-        <section id="view-treino" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-green-400">Sala de Treino</h2>
-        </section>
-        <section id="view-ranking" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-blue-400">Ranking</h2>
-        </section>
-        <section id="view-torneios" class="hidden p-6 text-center">
-            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-purple-400">Torneios</h2>
-        </section>
     </div>
 
     <script>
         const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6WTQdlUsDTQMY-6RMFBokbJCUySw';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
@@ -163,7 +136,7 @@
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('pass').value;
             const { error } = await _supabase.auth.signUp({ email, password });
-            if (error) alert(error.message); else alert("Verifique seu e-mail!");
+            if (error) alert(error.message); else alert("Conta criada! Verifique seu e-mail.");
         }
 
         async function fazerLogout() { await _supabase.auth.signOut(); location.reload(); }
@@ -180,64 +153,78 @@
             document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Buraco Mendonça";
         }
 
-        // SALAS
-        async function abrirSalas() {
+        // GERENCIAMENTO DE MESAS
+        async function abrirMesas() {
             changeView('view-salas');
-            carregarSalas();
-            _supabase.channel('lobby').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, carregarSalas).subscribe();
+            carregarMesasDoBanco();
+            _supabase.channel('lobby_mesas').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, carregarMesasDoBanco).subscribe();
         }
 
-        async function carregarSalas() {
-            const { data: salas } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
+        async function carregarMesasDoBanco() {
+            const { data: mesas, error } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
+            if (error) return console.error("Erro ao carregar mesas:", error);
+            
             const container = document.getElementById('lista-salas');
             container.innerHTML = '';
-            salas?.forEach(sala => {
-                const souDono = currentUser?.id === sala.criador_id;
+            mesas?.forEach(mesa => {
+                const souDono = currentUser?.id === mesa.criador_id;
                 container.innerHTML += `
-                    <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10">
-                        <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
-                            <p class="font-bold">${sala.nome}</p>
-                            <p class="text-[10px] text-yellow-500 uppercase">Criador: ${sala.criador_nome}</p>
+                    <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10 shadow-lg">
+                        <div onclick="entrarNaMesa('${mesa.id}', '${mesa.nome}', '${mesa.criador_id}')" class="flex-1 cursor-pointer">
+                            <p class="font-bold text-lg">${mesa.nome}</p>
+                            <p class="text-[10px] text-yellow-500 uppercase font-bold">Dono: ${mesa.criador_nome}</p>
                         </div>
-                        ${souDono ? `<button onclick="fecharSala('${sala.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
+                        ${souDono ? `<button onclick="fecharSala('${mesa.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
                     </div>`;
             });
         }
 
-        // MESA E SINCRONIZAÇÃO
+        async function criarNovaMesa() {
+            const nomeMesa = prompt("Nome da Mesa:");
+            if (nomeMesa && currentUser) {
+                const { error } = await _supabase.from('salas').insert([{ 
+                    nome: nomeMesa, 
+                    criador_id: currentUser.id, 
+                    criador_nome: currentUser.email.split('@')[0],
+                    d1_pontos: 0, d2_pontos: 0, lixo: [] 
+                }]);
+                if (error) alert("Erro ao criar mesa: " + error.message);
+                else carregarMesasDoBanco();
+            }
+        }
+
+        // JOGO EM TEMPO REAL
         async function entrarNaMesa(id, nome, criadorId) {
             salaAtivaId = id;
             changeView('view-mesa');
             document.getElementById('label-mesa').innerText = nome;
             const souDono = currentUser?.id === criadorId;
             document.getElementById('btn-encerrar').classList.toggle('hidden', !souDono);
-            document.getElementById('ctrl-d1').classList.toggle('hidden', !souDono);
-            document.getElementById('ctrl-d2').classList.toggle('hidden', !souDono);
             if(souDono) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
             
             jaComprou = false;
             document.getElementById('monte-fechado').classList.remove('disabled-deck');
-            gerarMaoInicial();
+            if (minhaMao.length === 0) gerarMaoInicial();
 
             if (canalMesa) canalMesa.unsubscribe();
-            canalMesa = _supabase.channel(`mesa_${id}`)
+            canalMesa = _supabase.channel(`sync_mesa_${id}`)
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas', filter: `id=eq.${id}` }, (payload) => {
-                    atualizarEstadoMesa(payload.new);
+                    sincronizarDadosMesa(payload.new);
                 })
                 .subscribe();
 
-            const { data: sala } = await _supabase.from('salas').select('*').eq('id', id).maybeSingle();
-            if (sala) atualizarEstadoMesa(sala);
+            const { data: mesa } = await _supabase.from('salas').select('*').eq('id', id).maybeSingle();
+            if (mesa) sincronizarDadosMesa(mesa);
         }
 
-        function atualizarEstadoMesa(dados) {
+        function sincronizarDadosMesa(dados) {
             document.getElementById('placar-d1').innerText = dados.d1_pontos || 0;
             document.getElementById('placar-d2').innerText = dados.d2_pontos || 0;
             lixoGlobal = dados.lixo || [];
-            renderizarLixo();
+            renderizarLixoVisual();
         }
 
-        function renderizarLixo() {
+        function renderizarLixoVisual() {
             const area = document.getElementById('area-lixo');
             if (lixoGlobal.length > 0) {
                 const topo = lixoGlobal[lixoGlobal.length - 1];
@@ -247,34 +234,39 @@
             }
         }
 
-        // AÇÕES
+        async function descartarSelecionada() {
+            if (indexSelecionado === null) return;
+            const carta = minhaMao[indexSelecionado];
+            const novoLixo = [...lixoGlobal, carta];
+            
+            const { error } = await _supabase.from('salas').update({ lixo: novoLixo }).eq('id', salaAtivaId);
+            if (!error) {
+                minhaMao.splice(indexSelecionado, 1);
+                indexSelecionado = null;
+                jaComprou = false;
+                document.getElementById('monte-fechado').classList.remove('disabled-deck');
+                document.getElementById('btn-descartar').classList.add('hidden');
+                renderizarMao();
+            }
+        }
+
+        async function comprarLixoCompleto() {
+            if (jaComprou || lixoGlobal.length === 0) return;
+            const lixoCopiado = [...lixoGlobal];
+            const { error } = await _supabase.from('salas').update({ lixo: [] }).eq('id', salaAtivaId);
+            if (!error) {
+                minhaMao = [...minhaMao, ...lixoCopiado];
+                jaComprou = true;
+                document.getElementById('monte-fechado').classList.add('disabled-deck');
+                renderizarMao();
+            }
+        }
+
         function comprarDoMonte() {
             if (jaComprou) return;
             minhaMao.push(gerarCartaAleatoria());
             jaComprou = true;
             document.getElementById('monte-fechado').classList.add('disabled-deck');
-            renderizarMao();
-        }
-
-        async function comprarLixoCompleto() {
-            if (jaComprou || lixoGlobal.length === 0) return;
-            minhaMao = [...minhaMao, ...lixoGlobal];
-            await _supabase.from('salas').update({ lixo: [] }).eq('id', salaAtivaId);
-            jaComprou = true;
-            document.getElementById('monte-fechado').classList.add('disabled-deck');
-            renderizarMao();
-        }
-
-        async function descartarSelecionada() {
-            if (indexSelecionado === null) return;
-            const carta = minhaMao[indexSelecionado];
-            const novoLixo = [...lixoGlobal, carta];
-            await _supabase.from('salas').update({ lixo: novoLixo }).eq('id', salaAtivaId);
-            minhaMao.splice(indexSelecionado, 1);
-            indexSelecionado = null;
-            jaComprou = false;
-            document.getElementById('monte-fechado').classList.remove('disabled-deck');
-            document.getElementById('btn-descartar').classList.add('hidden');
             renderizarMao();
         }
 
@@ -293,16 +285,13 @@
             });
         }
         function selecionarCarta(i) { indexSelecionado = i; document.getElementById('btn-descartar').classList.remove('hidden'); renderizarMao(); }
-        async function pontuar(coluna, valor) {
-            const elId = coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2';
-            const novo = (parseInt(document.getElementById(elId).innerText) || 0) + valor;
-            await _supabase.from('salas').update({ [coluna]: novo }).eq('id', salaAtivaId);
+
+        async function fecharSala(id) {
+            if (confirm("ENCERRAR MESA definitivamente?")) {
+                await _supabase.from('salas').delete().eq('id', id);
+                sairDaMesa();
+            }
         }
-        async function criarNovaSala() {
-            const n = prompt("Nome da Mesa:");
-            if (n && currentUser) await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0], d1_pontos: 0, d2_pontos: 0, lixo: [] }]);
-        }
-        async function fecharSala(id) { if (confirm("ENCERRAR MESA definitivamente?")) { await _supabase.from('salas').delete().eq('id', id); sairDaMesa(); } }
         function sairDaMesa() { if(canalMesa) canalMesa.unsubscribe(); salaAtivaId = null; changeView('view-menu'); }
     </script>
 </body>
