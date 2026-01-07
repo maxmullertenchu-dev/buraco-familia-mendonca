@@ -37,5 +37,205 @@
                 </div>
                 <button onclick="logout()" class="bg-red-900/50 p-2 rounded-lg text-xl">🚪</button>
             </div>
-            <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between">
-                <span class="flex items-center gap-4 text-lg
+            <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
+                <span class="flex items-center gap-4 text-lg"><span>🎮</span> Jogar Online</span>
+                <span>❯</span>
+            </button>
+        </section>
+
+        <section id="view-salas" class="hidden min-h-screen p-6">
+            <div class="flex items-center justify-between mb-6">
+                <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
+                <h2 class="text-2xl font-bold text-yellow-500">Lobby</h2>
+                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg">+</button>
+            </div>
+            <div id="lista-salas" class="space-y-4"></div>
+        </section>
+
+        <section id="view-mesa" class="hidden fixed inset-0 bg-[#064e3b] z-50 flex flex-col">
+            <div class="p-4 flex justify-between items-center bg-black/20 border-b border-white/10">
+                <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-3 py-1 rounded">VOLTAR</button>
+                
+                <div class="flex gap-4">
+                    <div class="text-center bg-black/30 px-3 py-1 rounded border border-white/10">
+                        <p class="text-[8px] text-gray-400 uppercase">Dupla 1</p>
+                        <p id="placar-d1" class="text-lg font-bold text-yellow-500">0</p>
+                        <div id="controles-d1" class="hidden flex gap-2 mt-1">
+                            <button onclick="alterarPontos('d1_pontos', -10)" class="bg-red-900 px-2 rounded text-xs">-</button>
+                            <button onclick="alterarPontos('d1_pontos', 10)" class="bg-green-900 px-2 rounded text-xs">+</button>
+                        </div>
+                    </div>
+                    <div class="text-center bg-black/30 px-3 py-1 rounded border border-white/10">
+                        <p class="text-[8px] text-gray-400 uppercase">Dupla 2</p>
+                        <p id="placar-d2" class="text-lg font-bold text-yellow-500">0</p>
+                        <div id="controles-d2" class="hidden flex gap-2 mt-1">
+                            <button onclick="alterarPontos('d2_pontos', -10)" class="bg-red-900 px-2 rounded text-xs">-</button>
+                            <button onclick="alterarPontos('d2_pontos', 10)" class="bg-green-900 px-2 rounded text-xs">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="btn-encerrar-mesa" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded hidden uppercase font-bold">Encerrar</button>
+            </div>
+            
+            <div class="flex-1 flex flex-col items-center justify-center">
+                <h3 id="nome-sala-ativa" class="text-white/30 uppercase tracking-widest text-sm mb-4">Mesa</h3>
+                <div class="text-7xl">🎴</div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw'; 
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentUser = null;
+        let salaAtivaId = null;
+
+        // INICIALIZAÇÃO ROBUSTA
+        window.addEventListener('load', async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
+                changeView('view-menu');
+            } else {
+                changeView('view-auth');
+            }
+        });
+
+        function changeView(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('pass').value;
+            
+            if (!email || !password) return alert("Preencha e-mail e senha.");
+
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                alert("Erro: " + error.message);
+            } else {
+                currentUser = data.user;
+                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
+                changeView('view-menu');
+            }
+        }
+
+        async function abrirSalas() {
+            changeView('view-salas');
+            carregarSalas();
+            
+            _supabase.channel('game-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+                carregarSalas();
+                if(salaAtivaId) atualizarDadosMesa();
+            }).subscribe();
+        }
+
+        async function carregarSalas() {
+            const { data: salas } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
+            const container = document.getElementById('lista-salas');
+            container.innerHTML = '';
+            
+            if (salas) {
+                salas.forEach(sala => {
+                    const souDono = currentUser && currentUser.id === sala.criador_id;
+                    container.innerHTML += `
+                        <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/5 shadow-lg">
+                            <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
+                                <p class="font-bold text-white">${sala.nome}</p>
+                                <p class="text-[10px] text-gray-400">Criador: ${sala.criador_nome}</p>
+                            </div>
+                            ${souDono ? `
+                                <button onclick="abrirMenu('${sala.id}')" class="p-2 text-xl">⋮</button>
+                                <div id="menu-${sala.id}" class="hidden menu-flutuante shadow-2xl">
+                                    <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-3 text-xs text-red-500">🗑️ Encerrar</button>
+                                </div>
+                            ` : ''}
+                        </div>`;
+                });
+            }
+        }
+
+        async function entrarNaMesa(id, nome, criadorId) {
+            salaAtivaId = id;
+            changeView('view-mesa');
+            document.getElementById('nome-sala-ativa').innerText = nome;
+            
+            const souDono = currentUser.id === criadorId;
+            const btnEncerrar = document.getElementById('btn-encerrar-mesa');
+            
+            if (souDono) {
+                btnEncerrar.classList.remove('hidden');
+                btnEncerrar.onclick = () => fecharSala(id);
+                document.getElementById('controles-d1').classList.remove('hidden');
+                document.getElementById('controles-d2').classList.remove('hidden');
+            } else {
+                btnEncerrar.classList.add('hidden');
+                document.getElementById('controles-d1').classList.add('hidden');
+                document.getElementById('controles-d2').classList.add('hidden');
+            }
+            
+            atualizarDadosMesa();
+        }
+
+        async function atualizarDadosMesa() {
+            if(!salaAtivaId) return;
+            const { data: sala } = await _supabase.from('salas').select('*').eq('id', salaAtivaId).maybeSingle();
+            if(sala) {
+                document.getElementById('placar-d1').innerText = sala.d1_pontos || 0;
+                document.getElementById('placar-d2').innerText = sala.d2_pontos || 0;
+            } else {
+                salaAtivaId = null;
+                changeView('view-salas');
+            }
+        }
+
+        async function alterarPontos(coluna, valor) {
+            const el = document.getElementById(coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2');
+            const pontosAtuais = parseInt(el.innerText);
+            await _supabase.from('salas').update({ [coluna]: pontosAtuais + valor }).eq('id', salaAtivaId);
+        }
+
+        async function criarNovaSala() {
+            const n = prompt("Nome da Sala:");
+            if (!n) return;
+            const { error } = await _supabase.from('salas').insert([{ 
+                nome: n, 
+                criador_id: currentUser.id, 
+                criador_nome: currentUser.email.split('@')[0] 
+            }]);
+            if (error && error.code === '23505') alert("Nome já em uso!");
+        }
+
+        async function fecharSala(id) {
+            if (confirm("Encerrar esta mesa definitivamente?")) {
+                await _supabase.from('salas').delete().eq('id', id);
+                salaAtivaId = null;
+                changeView('view-salas');
+            }
+        }
+
+        function abrirMenu(id) {
+            document.querySelectorAll('.menu-flutuante').forEach(m => m.id !== `menu-${id}` && m.classList.add('hidden'));
+            document.getElementById(`menu-${id}`).classList.toggle('hidden');
+        }
+
+        function sairDaMesa() {
+            salaAtivaId = null;
+            changeView('view-salas');
+        }
+
+        async function logout() { 
+            await _supabase.auth.signOut(); 
+            location.reload(); 
+        }
+    </script>
+</body>
+</html>
