@@ -14,6 +14,7 @@
         .hidden { display: none !important; }
         .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; transition: 0.2s; border: 1px solid #999; flex-shrink: 0; }
         .card-selected { transform: translateY(-15px); border: 3px solid #f59e0b; }
+        #mao-jogador { scrollbar-width: none; }
         .disabled-deck { opacity: 0.5; filter: grayscale(1); cursor: not-allowed !important; }
     </style>
 </head>
@@ -45,6 +46,10 @@
                 <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold shadow-lg">
                     <span>🎓 Sala de Treino</span> <span>❯</span>
                 </button>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="changeView('view-ranking')" class="bg-blue-900/40 p-4 rounded-xl border border-white/10">🏆 Ranking</button>
+                    <button onclick="changeView('view-torneios')" class="bg-purple-900/40 p-4 rounded-xl border border-white/10">🏅 Torneios</button>
+                </div>
             </div>
         </section>
 
@@ -82,9 +87,9 @@
                         </div>
                         <span class="text-[10px] font-bold opacity-50 uppercase">Monte</span>
                     </div>
-                    <div id="area-lixo-container" onclick="comprarLixoCompleto()" class="flex flex-col items-center gap-2">
+                    <div id="lixo-container" onclick="comprarLixoCompleto()" class="flex flex-col items-center gap-2">
                         <div id="area-lixo" class="w-20 h-28 bg-black/20 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center shadow-inner cursor-pointer relative">
-                            <span class="text-white/10 text-[10px] uppercase font-bold">Lixo</span>
+                            <span class="text-white/10 text-[10px] font-bold uppercase">Vazio</span>
                         </div>
                         <span class="text-[10px] font-bold opacity-50 uppercase">Lixo</span>
                     </div>
@@ -99,6 +104,19 @@
                 <div class="overflow-x-auto flex gap-2 justify-start min-h-[100px]" id="mao-jogador"></div>
             </div>
         </section>
+
+        <section id="view-treino" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-green-400">Sala de Treino</h2>
+        </section>
+        <section id="view-ranking" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-blue-400">Ranking</h2>
+        </section>
+        <section id="view-torneios" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-purple-400">Torneios</h2>
+        </section>
     </div>
 
     <script>
@@ -106,37 +124,28 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        let currentUser = null;
-        let salaAtivaId = null;
-        let minhaMao = [];
-        let lixoGlobal = [];
-        let indexSelecionado = null;
-        let jaComprou = false;
-        let canalMesa = null;
+        let currentUser = null, salaAtivaId = null, minhaMao = [], lixoGlobal = [], indexSelecionado = null, jaComprou = false, canalMesa = null;
 
-        // AUTH
         _supabase.auth.onAuthStateChange((event, session) => {
             currentUser = session?.user || null;
             if (currentUser) {
                 document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
                 if (!document.getElementById('view-auth').classList.contains('hidden')) changeView('view-menu');
-            } else {
-                changeView('view-auth');
-            }
+            } else { changeView('view-auth'); }
         });
 
         async function fazerLogin() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('pass').value;
             const { error } = await _supabase.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message);
+            if (error) alert("Erro: " + error.message);
         }
 
         async function fazerCadastro() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('pass').value;
             const { error } = await _supabase.auth.signUp({ email, password });
-            if (error) alert(error.message); else alert("Conta criada! Verifique seu e-mail.");
+            if (error) alert("Erro: " + error.message); else alert("Conta criada! Verifique seu e-mail.");
         }
 
         async function fazerLogout() { await _supabase.auth.signOut(); location.reload(); }
@@ -153,145 +162,115 @@
             document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Buraco Mendonça";
         }
 
-        // GERENCIAMENTO DE MESAS
         async function abrirMesas() {
             changeView('view-salas');
-            carregarMesasDoBanco();
-            _supabase.channel('lobby_mesas').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, carregarMesasDoBanco).subscribe();
+            carregarMesas();
+            _supabase.channel('lobby').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, carregarMesas).subscribe();
         }
 
-        async function carregarMesasDoBanco() {
-            const { data: mesas, error } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
-            if (error) return console.error("Erro ao carregar mesas:", error);
-            
+        async function carregarMesas() {
+            const { data: mesas } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('lista-salas');
             container.innerHTML = '';
-            mesas?.forEach(mesa => {
-                const souDono = currentUser?.id === mesa.criador_id;
+            mesas?.forEach(m => {
+                const souDono = currentUser?.id === m.criador_id;
                 container.innerHTML += `
-                    <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10 shadow-lg">
-                        <div onclick="entrarNaMesa('${mesa.id}', '${mesa.nome}', '${mesa.criador_id}')" class="flex-1 cursor-pointer">
-                            <p class="font-bold text-lg">${mesa.nome}</p>
-                            <p class="text-[10px] text-yellow-500 uppercase font-bold">Dono: ${mesa.criador_nome}</p>
+                    <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10">
+                        <div onclick="entrarNaMesa('${m.id}', '${m.nome}', '${m.criador_id}')" class="flex-1 cursor-pointer">
+                            <p class="font-bold">${m.nome}</p>
+                            <p class="text-[10px] text-yellow-500 uppercase">Dono: ${m.criador_nome}</p>
                         </div>
-                        ${souDono ? `<button onclick="fecharSala('${mesa.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
+                        ${souDono ? `<button onclick="fecharSala('${m.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
                     </div>`;
             });
         }
 
         async function criarNovaMesa() {
-            const nomeMesa = prompt("Nome da Mesa:");
-            if (nomeMesa && currentUser) {
+            const n = prompt("Nome da mesa:");
+            if (n) {
                 const { error } = await _supabase.from('salas').insert([{ 
-                    nome: nomeMesa, 
-                    criador_id: currentUser.id, 
-                    criador_nome: currentUser.email.split('@')[0],
+                    nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0],
                     d1_pontos: 0, d2_pontos: 0, lixo: [] 
                 }]);
-                if (error) alert("Erro ao criar mesa: " + error.message);
-                else carregarMesasDoBanco();
+                if (error) alert("Erro ao criar: Verifique se rodou o SQL no Supabase.");
             }
         }
 
-        // JOGO EM TEMPO REAL
         async function entrarNaMesa(id, nome, criadorId) {
             salaAtivaId = id;
             changeView('view-mesa');
             document.getElementById('label-mesa').innerText = nome;
-            const souDono = currentUser?.id === criadorId;
-            document.getElementById('btn-encerrar').classList.toggle('hidden', !souDono);
-            if(souDono) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
+            document.getElementById('btn-encerrar').classList.toggle('hidden', currentUser?.id !== criadorId);
+            if(currentUser?.id === criadorId) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
             
             jaComprou = false;
             document.getElementById('monte-fechado').classList.remove('disabled-deck');
-            if (minhaMao.length === 0) gerarMaoInicial();
+            if (minhaMao.length === 0) gerarMao();
 
             if (canalMesa) canalMesa.unsubscribe();
-            canalMesa = _supabase.channel(`sync_mesa_${id}`)
-                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas', filter: `id=eq.${id}` }, (payload) => {
-                    sincronizarDadosMesa(payload.new);
-                })
-                .subscribe();
+            canalMesa = _supabase.channel(`mesa_${id}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas', filter: `id=eq.${id}` }, (p) => {
+                sincronizar(p.new);
+            }).subscribe();
 
-            const { data: mesa } = await _supabase.from('salas').select('*').eq('id', id).maybeSingle();
-            if (mesa) sincronizarDadosMesa(mesa);
+            const { data } = await _supabase.from('salas').select('*').eq('id', id).maybeSingle();
+            if (data) sincronizar(data);
         }
 
-        function sincronizarDadosMesa(dados) {
-            document.getElementById('placar-d1').innerText = dados.d1_pontos || 0;
-            document.getElementById('placar-d2').innerText = dados.d2_pontos || 0;
-            lixoGlobal = dados.lixo || [];
-            renderizarLixoVisual();
-        }
-
-        function renderizarLixoVisual() {
+        function sincronizar(d) {
+            document.getElementById('placar-d1').innerText = d.d1_pontos || 0;
+            document.getElementById('placar-d2').innerText = d.d2_pontos || 0;
+            lixoGlobal = d.lixo || [];
             const area = document.getElementById('area-lixo');
             if (lixoGlobal.length > 0) {
                 const topo = lixoGlobal[lixoGlobal.length - 1];
                 area.innerHTML = `<div class="card-hand scale-75"><span>${topo.v}</span><span class="${topo.cor} text-2xl">${topo.n}</span></div>`;
-            } else {
-                area.innerHTML = `<span class="text-white/10 text-[10px] uppercase font-bold">Lixo</span>`;
-            }
+            } else { area.innerHTML = `<span class="text-white/10 text-[10px] font-bold uppercase">Vazio</span>`; }
+        }
+
+        function comprarDoMonte() {
+            if (jaComprou) return;
+            minhaMao.push(gerarCarta());
+            jaComprou = true;
+            document.getElementById('monte-fechado').classList.add('disabled-deck');
+            renderizarMao();
         }
 
         async function descartarSelecionada() {
             if (indexSelecionado === null) return;
-            const carta = minhaMao[indexSelecionado];
-            const novoLixo = [...lixoGlobal, carta];
-            
-            const { error } = await _supabase.from('salas').update({ lixo: novoLixo }).eq('id', salaAtivaId);
-            if (!error) {
-                minhaMao.splice(indexSelecionado, 1);
-                indexSelecionado = null;
-                jaComprou = false;
-                document.getElementById('monte-fechado').classList.remove('disabled-deck');
-                document.getElementById('btn-descartar').classList.add('hidden');
-                renderizarMao();
-            }
+            const carta = minhaMao.splice(indexSelecionado, 1)[0];
+            await _supabase.from('salas').update({ lixo: [...lixoGlobal, carta] }).eq('id', salaAtivaId);
+            indexSelecionado = null; jaComprou = false;
+            document.getElementById('monte-fechado').classList.remove('disabled-deck');
+            document.getElementById('btn-descartar').classList.add('hidden');
+            renderizarMao();
         }
 
         async function comprarLixoCompleto() {
             if (jaComprou || lixoGlobal.length === 0) return;
-            const lixoCopiado = [...lixoGlobal];
+            const lixoLocal = [...lixoGlobal];
             const { error } = await _supabase.from('salas').update({ lixo: [] }).eq('id', salaAtivaId);
             if (!error) {
-                minhaMao = [...minhaMao, ...lixoCopiado];
+                minhaMao = [...minhaMao, ...lixoLocal];
                 jaComprou = true;
                 document.getElementById('monte-fechado').classList.add('disabled-deck');
                 renderizarMao();
             }
         }
 
-        function comprarDoMonte() {
-            if (jaComprou) return;
-            minhaMao.push(gerarCartaAleatoria());
-            jaComprou = true;
-            document.getElementById('monte-fechado').classList.add('disabled-deck');
-            renderizarMao();
-        }
-
-        function gerarMaoInicial() { minhaMao = Array.from({length: 11}, gerarCartaAleatoria); renderizarMao(); }
-        function gerarCartaAleatoria() {
-            const n = ['♥️', '♦️', '♣️', '♠️'][Math.floor(Math.random()*4)];
-            const v = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'][Math.floor(Math.random()*13)];
+        function gerarMao() { minhaMao = Array.from({length: 11}, gerarCarta); renderizarMao(); }
+        function gerarCarta() {
+            const n = ['♥️', '♦️', '♣️', '♠️'][Math.floor(Math.random()*4)], v = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'][Math.floor(Math.random()*13)];
             return { v, n, cor: (n === '♥️' || n === '♦️') ? 'text-red-600' : 'text-black' };
         }
         function renderizarMao() {
-            const container = document.getElementById('mao-jogador');
-            container.innerHTML = '';
+            const c = document.getElementById('mao-jogador'); c.innerHTML = '';
             minhaMao.forEach((carta, i) => {
-                const sel = (indexSelecionado === i) ? 'card-selected' : '';
-                container.innerHTML += `<div onclick="selecionarCarta(${i})" class="card-hand ${sel}"><span>${carta.v}</span><span class="${carta.cor} text-2xl">${carta.n}</span></div>`;
+                const s = (indexSelecionado === i) ? 'card-selected' : '';
+                c.innerHTML += `<div onclick="selecionar(${i})" class="card-hand ${s}"><span>${carta.v}</span><span class="${carta.cor} text-2xl">${carta.n}</span></div>`;
             });
         }
-        function selecionarCarta(i) { indexSelecionado = i; document.getElementById('btn-descartar').classList.remove('hidden'); renderizarMao(); }
-
-        async function fecharSala(id) {
-            if (confirm("ENCERRAR MESA definitivamente?")) {
-                await _supabase.from('salas').delete().eq('id', id);
-                sairDaMesa();
-            }
-        }
+        function selecionar(i) { indexSelecionado = i; document.getElementById('btn-descartar').classList.remove('hidden'); renderizarMao(); }
+        async function fecharSala(id) { if (confirm("Encerrar esta mesa permanentemente?")) { await _supabase.from('salas').delete().eq('id', id); sairDaMesa(); } }
         function sairDaMesa() { if(canalMesa) canalMesa.unsubscribe(); salaAtivaId = null; changeView('view-menu'); }
     </script>
 </body>
