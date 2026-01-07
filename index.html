@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Buraco da Família Mendonça</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #064e3b; color: white; font-family: sans-serif; overflow: hidden; }
+        .card { width: 45px; height: 65px; border-radius: 4px; border: 1px solid #ccc; background: white; color: black; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; margin-left: -15px; box-shadow: 2px 0 5px rgba(0,0,0,0.3); transition: transform 0.2s; }
+        .card:first-child { margin-left: 0; }
+        .card:hover { transform: translateY(-10px); z-index: 100; }
+        .red { color: red; }
+        .vulneravel { animation: pulse 1.5s infinite; color: #fbbf24; font-weight: bold; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        .mesa-container { height: 60vh; overflow-y: auto; padding: 10px; }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+
+    <header class="bg-black/40 p-2 flex justify-between items-center text-sm">
+        <div id="placar-d1">Dupla 1: <span id="pts-d1">0</span></div>
+        <div class="text-center">
+            <div id="timer" class="text-xl font-mono text-red-500">90s</div>
+            <div class="text-[10px]">VEZ DE: <span id="jogador-vez">...</span></div>
+        </div>
+        <div id="placar-d2">Dupla 2: <span id="pts-d2">0</span></div>
+    </header>
+
+    <main class="mesa-container flex-1 relative">
+        <div id="jogo-cartas" class="grid grid-cols-2 gap-2">
+            </div>
+
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-8">
+            <div onclick="comprarDoMonte()" class="text-center">
+                <div class="w-12 h-16 bg-blue-900 border-2 border-white rounded flex items-center justify-center shadow-lg">🂠</div>
+                <span class="text-[10px]" id="cont-monte">54</span>
+            </div>
+            <div onclick="pegarDescarte()" class="text-center">
+                <div id="topo-descarte" class="w-12 h-16 bg-white border rounded flex items-center justify-center text-black shadow-lg"></div>
+                <span class="text-[10px]" id="cont-descarte">0</span>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-black/20 p-2 min-h-[150px]">
+        <div class="flex justify-between mb-1 text-[10px]">
+            <span>SUA MÃO</span>
+            <button onclick="alternarSom()" id="btn-som">🔊 Som: ON</button>
+        </div>
+        <div id="mao-jogador" class="flex flex-wrap pl-4 pb-4">
+            </div>
+    </footer>
+
+    <script>
+        // CONFIGURAÇÃO SUPABASE
+        const supabaseUrl = 'SUA_URL_AQUI';
+        const supabaseKey = 'SUA_KEY_AQUI';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let mao = [];
+        let pontosD1 = 0;
+        let pontosD2 = 0;
+        let tempo = 90;
+
+        // Inicialização
+        async function init() {
+            verificarLogin();
+            renderizarMao();
+            iniciarTimer();
+        }
+
+        function verificarLogin() {
+            // Lógica de persistência de login solicitada
+            const session = supabase.auth.getSession();
+            if(!session) { /* Redirecionar para login */ }
+        }
+
+        function iniciarTimer() {
+            setInterval(() => {
+                if(tempo > 0) {
+                    tempo--;
+                    document.getElementById('timer').innerText = tempo + 's';
+                } else {
+                    ativarBot();
+                }
+            }, 1000);
+        }
+
+        function renderizarMao() {
+            const container = document.getElementById('mao-jogador');
+            container.innerHTML = '';
+            // Exemplo de organização automática solicitada (Naipe + Valor)
+            mao.sort((a, b) => a.naipe.localeCompare(b.naipe) || a.valor - b.valor);
+            
+            mao.forEach(carta => {
+                const div = document.createElement('div');
+                div.className = `card ${['♥','♦'].includes(carta.naipe) ? 'red' : ''}`;
+                div.innerHTML = `<span>${carta.label}</span><span>${carta.naipe}</span>`;
+                div.onclick = () => descartar(carta);
+                container.appendChild(div);
+            });
+        }
+
+        // Regra de 3000 pontos e vulnerabilidade (1500)
+        function atualizarPontos(d1, d2) {
+            pontosD1 += d1;
+            pontosD2 += d2;
+            document.getElementById('pts-d1').innerText = pontosD1;
+            document.getElementById('pts-d2').innerText = pontosD2;
+
+            if(pontosD1 >= 1500) document.getElementById('placar-d1').classList.add('vulneravel');
+            if(pontosD2 >= 1500) document.getElementById('placar-d2').classList.add('vulneravel');
+            
+            if(pontosD1 >= 3000 || pontosD2 >= 3000) {
+                alert("Fim de Jogo! Verificando vencedor...");
+                registrarVitoria();
+            }
+        }
+
+        async function registrarVitoria() {
+            // Salva no Ranking Real conforme solicitado
+            const { data, error } = await supabase.from('perfis').update({ 
+                vitorias: vitorias + 1,
+                soma_pontuacao: soma_pontuacao + pontosD1
+            }).eq('id', user.id);
+        }
+
+        function ativarBot() {
+            console.log("Bot assumindo a jogada...");
+            // Lógica de IA simples para não travar o jogo
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
