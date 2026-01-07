@@ -12,7 +12,7 @@
         .btn-gold { background-color: #f59e0b; color: #064e3b; font-weight: bold; }
         .hidden { display: none !important; }
         .menu-flutuante { position: absolute; right: 10px; top: 45px; background: #1a2e2a; border: 1px solid #f59e0b; border-radius: 8px; z-index: 100; min-width: 120px; }
-        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
+        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -21,15 +21,11 @@
             <div class="bg-card-dark p-8 rounded-2xl w-full max-w-sm text-center shadow-2xl">
                 <div class="text-5xl mb-2">🃏</div>
                 <h1 id="auth-title" class="text-3xl font-bold text-yellow-500 mb-6">Buraco Mendonça</h1>
-                
                 <div class="space-y-4">
                     <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
                     <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    
                     <button id="btn-login-action" onclick="fazerLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
-                    
                     <button id="btn-signup-action" onclick="fazerCadastro()" class="btn-gold w-full py-3 rounded-lg text-lg hidden">Criar Minha Conta</button>
-                    
                     <button id="toggle-auth-link" onclick="alternarModoAuth()" class="text-gray-400 text-sm underline">Não tem conta? Cadastre-se</button>
                 </div>
             </div>
@@ -40,7 +36,6 @@
                 <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
                 <button onclick="fazerLogout()" class="bg-red-900/50 p-2 rounded-lg">🚪</button>
             </div>
-            
             <div class="grid gap-4">
                 <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between">
                     <span>🎮 Jogar Online</span> <span>❯</span>
@@ -59,7 +54,7 @@
             <div class="flex items-center justify-between mb-6">
                 <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
                 <h2 class="text-2xl font-bold text-yellow-500">Lobby</h2>
-                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold">+</button>
+                <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg">+</button>
             </div>
             <div id="lista-salas" class="space-y-4"></div>
         </section>
@@ -69,33 +64,45 @@
                 <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-3 py-1 rounded">SAIR</button>
                 <div class="flex gap-4">
                     <div class="text-center bg-black/30 px-3 py-1 rounded border border-white/10">
-                        <p class="text-[8px] text-gray-400">D1</p>
+                        <p class="text-[8px] text-gray-400">DUPLA 1</p>
                         <p id="placar-d1" class="text-lg font-bold text-yellow-500">0</p>
-                        <div id="ctrl-d1" class="hidden flex gap-2"><button onclick="pontuar('d1_pontos',-10)">-</button><button onclick="pontuar('d1_pontos',10)">+</button></div>
+                        <div id="ctrl-d1" class="hidden flex gap-2 mt-1">
+                            <button onclick="pontuar('d1_pontos', -10)" class="bg-red-900/50 px-2 rounded">-</button>
+                            <button onclick="pontuar('d1_pontos', 10)" class="bg-green-900/50 px-2 rounded">+</button>
+                        </div>
                     </div>
                     <div class="text-center bg-black/30 px-3 py-1 rounded border border-white/10">
-                        <p class="text-[8px] text-gray-400">D2</p>
+                        <p class="text-[8px] text-gray-400">DUPLA 2</p>
                         <p id="placar-d2" class="text-lg font-bold text-yellow-500">0</p>
-                        <div id="ctrl-d2" class="hidden flex gap-2"><button onclick="pontuar('d2_pontos',-10)">-</button><button onclick="pontuar('d2_pontos',10)">+</button></div>
+                        <div id="ctrl-d2" class="hidden flex gap-2 mt-1">
+                            <button onclick="pontuar('d2_pontos', -10)" class="bg-red-900/50 px-2 rounded">-</button>
+                            <button onclick="pontuar('d2_pontos', 10)" class="bg-green-900/50 px-2 rounded">+</button>
+                        </div>
                     </div>
                 </div>
-                <button id="btn-encerrar" class="bg-red-600 text-[10px] px-2 py-1 rounded hidden">ENCERRAR</button>
+                <button id="btn-encerrar" class="bg-red-600 text-[10px] px-2 py-1 rounded hidden font-bold">ENCERRAR</button>
             </div>
-            <div class="flex-1 flex items-center justify-center text-7xl">🎴</div>
+            <div class="flex-1 flex flex-col items-center justify-center text-7xl">
+                <span id="label-mesa" class="text-xs text-white/20 uppercase mb-4"></span>
+                🎴
+            </div>
             <div class="bg-black/40 p-4 overflow-x-auto flex gap-1 justify-center" id="mao-jogador"></div>
         </section>
 
         <section id="view-treino" class="hidden p-6 text-center">
             <button onclick="changeView('view-menu')">⬅️ Voltar</button>
-            <h2 class="text-2xl mt-10">Sala de Treino (Em breve)</h2>
+            <h2 class="text-2xl mt-10 font-bold text-green-400">Sala de Treino</h2>
+            <p class="mt-4 text-gray-400">Área para praticar contra o sistema.</p>
         </section>
         <section id="view-ranking" class="hidden p-6 text-center">
             <button onclick="changeView('view-menu')">⬅️ Voltar</button>
-            <h2 class="text-2xl mt-10">Ranking (Em breve)</h2>
+            <h2 class="text-2xl mt-10 font-bold text-blue-400">Ranking Familiar</h2>
+            <p class="mt-4 text-gray-400">Veja quem são os mestres do Buraco.</p>
         </section>
         <section id="view-torneios" class="hidden p-6 text-center">
             <button onclick="changeView('view-menu')">⬅️ Voltar</button>
-            <h2 class="text-2xl mt-10">Torneios (Em breve)</h2>
+            <h2 class="text-2xl mt-10 font-bold text-purple-400">Torneios Ativos</h2>
+            <p class="mt-4 text-gray-400">Inscrições abertas em breve.</p>
         </section>
     </div>
 
@@ -107,13 +114,7 @@
         let currentUser = null;
         let salaAtivaId = null;
 
-        // --- SISTEMA DE NAVEGAÇÃO ---
-        function changeView(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        // --- SISTEMA DE AUTENTICAÇÃO ---
+        // INICIALIZAÇÃO E NAVEGAÇÃO
         window.addEventListener('load', async () => {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
@@ -123,26 +124,25 @@
             }
         });
 
+        function changeView(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // AUTH
         function alternarModoAuth() {
             const isLogin = document.getElementById('btn-signup-action').classList.contains('hidden');
-            if (isLogin) {
-                document.getElementById('auth-title').innerText = "Criar Conta";
-                document.getElementById('btn-login-action').classList.add('hidden');
-                document.getElementById('btn-signup-action').classList.remove('hidden');
-                document.getElementById('toggle-auth-link').innerText = "Já tem conta? Entrar";
-            } else {
-                document.getElementById('auth-title').innerText = "Buraco Mendonça";
-                document.getElementById('btn-login-action').classList.remove('hidden');
-                document.getElementById('btn-signup-action').classList.add('hidden');
-                document.getElementById('toggle-auth-link').innerText = "Não tem conta? Cadastre-se";
-            }
+            document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Buraco Mendonça";
+            document.getElementById('btn-login-action').classList.toggle('hidden', isLogin);
+            document.getElementById('btn-signup-action').classList.toggle('hidden', !isLogin);
+            document.getElementById('toggle-auth-link').innerText = isLogin ? "Já tem conta? Entrar" : "Não tem conta? Cadastre-se";
         }
 
         async function fazerLogin() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('pass').value;
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-            if (error) alert(error.message);
+            if (error) alert("Erro: " + error.message);
             else { currentUser = data.user; location.reload(); }
         }
 
@@ -151,7 +151,7 @@
             const password = document.getElementById('pass').value;
             const { error } = await _supabase.auth.signUp({ email, password });
             if (error) alert(error.message);
-            else alert("Cadastro realizado! Verifique seu e-mail.");
+            else alert("Cadastro feito! Verifique seu e-mail.");
         }
 
         async function fazerLogout() {
@@ -159,14 +159,17 @@
             window.location.replace(window.location.pathname);
         }
 
-        // --- SISTEMA DE SALAS ---
+        // LOBBY E REALTIME
         async function abrirSalas() {
             changeView('view-salas');
             carregarSalas();
-            _supabase.channel('public:salas').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
-                carregarSalas();
-                if(salaAtivaId) atualizarDadosMesa();
-            }).subscribe();
+            // Canal Realtime unificado
+            _supabase.channel('db-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, (payload) => {
+                    carregarSalas();
+                    if (salaAtivaId) atualizarDadosMesa();
+                })
+                .subscribe();
         }
 
         async function carregarSalas() {
@@ -177,61 +180,105 @@
                 salas.forEach(sala => {
                     const souDono = currentUser && currentUser.id === sala.criador_id;
                     container.innerHTML += `
-                        <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/5">
-                            <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1">
+                        <div class="bg-card-dark p-4 rounded-xl flex justify-between items-center relative border border-white/5 shadow-lg">
+                            <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
                                 <p class="font-bold">${sala.nome}</p>
-                                <p class="text-[10px] text-gray-400">Dono: ${sala.criador_nome}</p>
+                                <p class="text-[10px] text-gray-400">Criador: ${sala.criador_nome}</p>
                             </div>
-                            ${souDono ? `<button onclick="document.getElementById('m-${sala.id}').classList.toggle('hidden')">⋮</button>
-                            <div id="m-${sala.id}" class="hidden menu-flutuante"><button onclick="fecharSala('${sala.id}')" class="p-3 text-red-500">Encerrar</button></div>` : ''}
+                            ${souDono ? `<button onclick="document.getElementById('m-${sala.id}').classList.toggle('hidden')" class="p-2">⋮</button>
+                            <div id="m-${sala.id}" class="hidden menu-flutuante shadow-2xl">
+                                <button onclick="fecharSala('${sala.id}')" class="w-full text-left p-3 text-red-500 text-xs font-bold">🗑️ Encerrar Mesa</button>
+                            </div>` : ''}
                         </div>`;
                 });
             }
         }
 
+        // MESA DE JOGO E PLACAR
         async function entrarNaMesa(id, nome, criadorId) {
             salaAtivaId = id;
             changeView('view-mesa');
-            const souDono = currentUser.id === criadorId;
+            document.getElementById('label-mesa').innerText = nome;
+            
+            const souDono = currentUser && currentUser.id === criadorId;
+            
+            // Mostrar controles apenas para o dono
             document.getElementById('btn-encerrar').classList.toggle('hidden', !souDono);
-            if(souDono) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
             document.getElementById('ctrl-d1').classList.toggle('hidden', !souDono);
             document.getElementById('ctrl-d2').classList.toggle('hidden', !souDono);
+            
+            if(souDono) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
+            
             atualizarDadosMesa();
             renderMao();
         }
 
         async function atualizarDadosMesa() {
             if(!salaAtivaId) return;
-            const { data: sala } = await _supabase.from('salas').select('*').eq('id', salaAtivaId).maybeSingle();
+            // Usamos select single para pegar os dados da sala atualizada
+            const { data: sala, error } = await _supabase.from('salas').select('*').eq('id', salaAtivaId).maybeSingle();
+            
             if(sala) {
                 document.getElementById('placar-d1').innerText = sala.d1_pontos || 0;
                 document.getElementById('placar-d2').innerText = sala.d2_pontos || 0;
-            } else { salaAtivaId = null; changeView('view-salas'); }
+            } else if (!sala && !error) {
+                // Se a sala sumiu do banco, sai da mesa
+                salaAtivaId = null;
+                alert("Esta mesa foi encerrada pelo dono.");
+                changeView('view-salas');
+            }
         }
 
-        async function pontuar(col, val) {
-            const p = parseInt(document.getElementById(col === 'd1_pontos' ? 'placar-d1' : 'placar-d2').innerText);
-            await _supabase.from('salas').update({ [col]: p + val }).eq('id', salaAtivaId);
+        async function pontuar(coluna, valor) {
+            if(!salaAtivaId) return;
+
+            // 1. Pegar valor atual do elemento na tela
+            const elId = coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2';
+            const pontosAtuais = parseInt(document.getElementById(elId).innerText);
+            const novoValor = pontosAtuais + valor;
+
+            // 2. Tentar atualizar no banco
+            const { error } = await _supabase
+                .from('salas')
+                .update({ [coluna]: novoValor })
+                .eq('id', salaAtivaId);
+
+            if (error) {
+                alert("Erro ao atualizar placar: " + error.message);
+                console.error(error);
+            }
+            // Não precisamos atualizar o HTML aqui, o Realtime fará isso para todos (incluindo você)
         }
 
         async function criarNovaSala() {
             const n = prompt("Nome da Sala:");
-            if (n) await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0] }]);
+            if (n) {
+                const { error } = await _supabase.from('salas').insert([{ 
+                    nome: n, 
+                    criador_id: currentUser.id, 
+                    criador_nome: currentUser.email.split('@')[0],
+                    d1_pontos: 0,
+                    d2_pontos: 0
+                }]);
+                if (error) alert("Erro ao criar sala: " + error.message);
+            }
         }
 
         async function fecharSala(id) {
-            if (confirm("Encerrar mesa?")) {
-                await _supabase.from('salas').delete().eq('id', id);
-                salaAtivaId = null;
-                changeView('view-salas');
+            if (confirm("Deseja encerrar a mesa para todos?")) {
+                const { error } = await _supabase.from('salas').delete().eq('id', id);
+                if (error) alert("Erro ao encerrar: " + error.message);
+                else {
+                    salaAtivaId = null;
+                    changeView('view-salas');
+                }
             }
         }
 
         function renderMao() {
             const m = document.getElementById('mao-jogador');
             m.innerHTML = '';
-            for(let i=0; i<11; i++) m.innerHTML += `<div class="card-hand">A<span class="text-red-600">♥️</span></div>`;
+            for(let i=0; i<11; i++) m.innerHTML += `<div class="card-hand">A<span class="text-red-600 text-xl">♥️</span></div>`;
         }
 
         function sairDaMesa() { salaAtivaId = null; changeView('view-salas'); }
