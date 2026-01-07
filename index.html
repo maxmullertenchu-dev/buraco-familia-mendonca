@@ -13,6 +13,7 @@
         .btn-gold:hover { background-color: #d97706; transform: scale(1.02); }
         .hidden { display: none; }
         .menu-flutuante { position: absolute; right: 10px; top: 45px; background: #1a2e2a; border: 1px solid #f59e0b; border-radius: 8px; z-index: 100; min-width: 120px; }
+        .card-hand { min-width: 50px; height: 75px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #ccc; }
     </style>
 </head>
 <body>
@@ -38,16 +39,35 @@
                 </div>
                 <button onclick="logout()" class="bg-red-900/50 p-2 rounded-lg text-xl">🚪</button>
             </div>
-            <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
-                <span class="flex items-center gap-4 text-lg"><span>🎮</span> Jogar Online</span>
-                <span>❯</span>
-            </button>
+            
+            <div class="grid gap-4">
+                <button onclick="abrirSalas()" class="btn-gold w-full p-5 rounded-xl flex items-center justify-between shadow-lg">
+                    <span class="flex items-center gap-4 text-lg"><span>🎮</span> Jogar Online</span>
+                    <span>❯</span>
+                </button>
+                
+                <button onclick="changeView('view-treino')" class="w-full bg-[#10b981] p-5 rounded-xl flex items-center justify-between font-bold shadow-lg">
+                    <span class="flex items-center gap-4 text-lg"><span>🎓</span> Sala de Treino</span>
+                    <span>❯</span>
+                </button>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="changeView('view-ranking')" class="bg-blue-900/40 p-4 rounded-xl border border-white/10 flex flex-col items-center">
+                        <span class="text-2xl mb-1">🏆</span>
+                        <span class="text-xs uppercase font-bold">Ranking</span>
+                    </button>
+                    <button onclick="changeView('view-torneios')" class="bg-purple-900/40 p-4 rounded-xl border border-white/10 flex flex-col items-center">
+                        <span class="text-2xl mb-1">🏅</span>
+                        <span class="text-xs uppercase font-bold">Torneios</span>
+                    </button>
+                </div>
+            </div>
         </section>
 
         <section id="view-salas" class="hidden min-h-screen p-6">
             <div class="flex items-center justify-between mb-6">
                 <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
-                <h2 class="text-2xl font-bold text-yellow-500">Lobby</h2>
+                <h2 class="text-2xl font-bold text-yellow-500">Salas Online</h2>
                 <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg">+</button>
             </div>
             <div id="lista-salas" class="space-y-4"></div>
@@ -55,7 +75,8 @@
 
         <section id="view-mesa" class="hidden fixed inset-0 bg-[#064e3b] z-50 flex flex-col">
             <div class="p-4 flex justify-between items-center bg-black/20 border-b border-white/10">
-                <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-3 py-1 rounded">VOLTAR</button>
+                <button onclick="sairDaMesa()" class="text-xs border border-white/20 px-3 py-1 rounded">SAIR</button>
+                
                 <div class="flex gap-4">
                     <div class="text-center bg-black/30 px-3 py-1 rounded border border-white/10">
                         <p class="text-[8px] text-gray-400 uppercase">Dupla 1</p>
@@ -74,84 +95,41 @@
                         </div>
                     </div>
                 </div>
+
                 <button id="btn-encerrar-mesa" class="bg-red-600 text-white text-[10px] px-2 py-1 rounded hidden uppercase font-bold">Encerrar</button>
             </div>
             <div class="flex-1 flex flex-col items-center justify-center">
-                <h3 id="nome-sala-ativa" class="text-white/30 uppercase tracking-widest text-sm mb-4">Mesa</h3>
+                <h3 id="nome-sala-ativa" class="text-white/20 uppercase tracking-widest text-sm mb-4">Mesa</h3>
                 <div class="text-7xl">🎴</div>
             </div>
+            <div class="bg-black/40 p-4 border-t border-white/10 overflow-x-auto">
+                <div id="mao-jogador" class="flex gap-1"></div>
+            </div>
+        </section>
+
+        <section id="view-treino" class="hidden min-h-screen p-6">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-green-400 mb-4">Sala de Treino</h2>
+            <div class="bg-card-dark p-6 rounded-xl text-center">
+                <p class="text-gray-400 italic">Área em desenvolvimento para prática contra bot.</p>
+            </div>
+        </section>
+
+        <section id="view-ranking" class="hidden min-h-screen p-6">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-blue-400 mb-4">Ranking da Família</h2>
+            <div class="bg-card-dark p-6 rounded-xl">
+                <p class="text-sm text-gray-300">1. Jogador Master - 2500 pts</p>
+            </div>
+        </section>
+
+        <section id="view-torneios" class="hidden min-h-screen p-6">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-purple-400 mb-4">Torneios Ativos</h2>
+            <p class="text-center text-gray-500 mt-10">Nenhum torneio agendado para hoje.</p>
         </section>
     </div>
 
     <script>
         const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co'; 
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw'; 
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        let currentUser = null;
-        let salaAtivaId = null;
-        let isSignUpMode = false;
-
-        // INICIALIZAÇÃO
-        window.addEventListener('load', async () => {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session) {
-                currentUser = session.user;
-                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
-                changeView('view-menu');
-            } else {
-                changeView('view-auth');
-            }
-        });
-
-        function changeView(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-        }
-
-        // LÓGICA DE CADASTRO / LOGIN
-        function toggleAuthMode() {
-            isSignUpMode = !isSignUpMode;
-            const title = document.getElementById('auth-title');
-            const btn = document.getElementById('btn-auth-principal');
-            const toggleBtn = document.getElementById('auth-toggle-btn');
-
-            if (isSignUpMode) {
-                title.innerText = "Criar Conta";
-                btn.innerText = "Cadastrar";
-                btn.onclick = handleSignup;
-                toggleBtn.innerText = "Já tem conta? Entrar";
-            } else {
-                title.innerText = "Buraco Mendonça";
-                btn.innerText = "Entrar";
-                btn.onclick = handleLogin;
-                toggleBtn.innerText = "Não tem conta? Cadastre-se";
-            }
-        }
-
-        async function handleLogin() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('pass').value;
-            if (!email || !password) return alert("Preencha e-mail e senha.");
-
-            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-            if (error) alert("Erro: " + error.message);
-            else {
-                currentUser = data.user;
-                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
-                changeView('view-menu');
-            }
-        }
-
-        async function handleSignup() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('pass').value;
-            if (!email || !password) return alert("Preencha e-mail e senha.");
-
-            const { data, error } = await _supabase.auth.signUp({ email, password });
-            if (error) alert("Erro: " + error.message);
-            else alert("Cadastro realizado! Verifique seu e-mail ou faça login.");
-        }
-
-        async function logout() {
-            await _supabase.auth
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty
