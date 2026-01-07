@@ -13,7 +13,7 @@
         .btn-gold:hover { background-color: #d97706; transform: scale(1.02); }
         .hidden { display: none; }
         .menu-flutuante { position: absolute; right: 10px; top: 45px; background: #1a2e2a; border: 1px solid #f59e0b; border-radius: 8px; z-index: 100; min-width: 120px; }
-        .card-hand { min-width: 50px; height: 75px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #ccc; }
+        .card-hand { min-width: 45px; height: 70px; background: white; border-radius: 6px; color: black; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #ccc; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -25,7 +25,7 @@
                 <div class="space-y-4">
                     <input type="email" id="email" placeholder="E-mail" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
                     <input type="password" id="pass" placeholder="Senha" class="w-full p-3 rounded-lg bg-black/20 border border-white/10 text-white outline-none">
-                    <button id="btn-auth-principal" onclick="handleLogin()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
+                    <button id="btn-auth-principal" onclick="authAction()" class="btn-gold w-full py-3 rounded-lg text-lg">Entrar</button>
                     <button id="auth-toggle-btn" onclick="toggleAuthMode()" class="text-gray-400 text-sm hover:text-white underline">Não tem conta? Cadastre-se</button>
                 </div>
             </div>
@@ -35,7 +35,6 @@
             <div class="flex justify-between items-center mb-8 bg-black/20 p-4 rounded-xl">
                 <div>
                     <p class="text-yellow-500 font-bold">Olá, <span id="user-display">Jogador</span></p>
-                    <p class="text-[10px] text-gray-400">Bem-vindo à mesa!</p>
                 </div>
                 <button onclick="logout()" class="bg-red-900/50 p-2 rounded-lg text-xl">🚪</button>
             </div>
@@ -67,7 +66,7 @@
         <section id="view-salas" class="hidden min-h-screen p-6">
             <div class="flex items-center justify-between mb-6">
                 <button onclick="changeView('view-menu')" class="text-2xl">⬅️</button>
-                <h2 class="text-2xl font-bold text-yellow-500">Salas Online</h2>
+                <h2 class="text-2xl font-bold text-yellow-500">Lobby</h2>
                 <button onclick="criarNovaSala()" class="bg-yellow-500 text-black px-4 py-2 rounded-full font-bold shadow-lg">+</button>
             </div>
             <div id="lista-salas" class="space-y-4"></div>
@@ -103,33 +102,91 @@
                 <div class="text-7xl">🎴</div>
             </div>
             <div class="bg-black/40 p-4 border-t border-white/10 overflow-x-auto">
-                <div id="mao-jogador" class="flex gap-1"></div>
+                <div id="mao-jogador" class="flex gap-1 justify-center"></div>
             </div>
         </section>
 
         <section id="view-treino" class="hidden min-h-screen p-6">
             <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
             <h2 class="text-2xl font-bold text-green-400 mb-4">Sala de Treino</h2>
-            <div class="bg-card-dark p-6 rounded-xl text-center">
-                <p class="text-gray-400 italic">Área em desenvolvimento para prática contra bot.</p>
-            </div>
+            <p class="text-gray-400">Pratique suas jogadas aqui.</p>
         </section>
 
         <section id="view-ranking" class="hidden min-h-screen p-6">
             <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-blue-400 mb-4">Ranking da Família</h2>
-            <div class="bg-card-dark p-6 rounded-xl">
-                <p class="text-sm text-gray-300">1. Jogador Master - 2500 pts</p>
-            </div>
+            <h2 class="text-2xl font-bold text-blue-400 mb-4">Ranking</h2>
+            <p class="text-gray-400">Em breve o ranking dos melhores da família.</p>
         </section>
 
         <section id="view-torneios" class="hidden min-h-screen p-6">
             <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
-            <h2 class="text-2xl font-bold text-purple-400 mb-4">Torneios Ativos</h2>
-            <p class="text-center text-gray-500 mt-10">Nenhum torneio agendado para hoje.</p>
+            <h2 class="text-2xl font-bold text-purple-400 mb-4">Torneios</h2>
+            <p class="text-gray-400">Participe dos torneios mensais.</p>
         </section>
     </div>
 
     <script>
         const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co'; 
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw'; 
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let currentUser = null;
+        let salaAtivaId = null;
+        let isSignUpMode = false;
+
+        // INICIALIZAÇÃO
+        window.addEventListener('load', async () => {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
+                changeView('view-menu');
+            } else {
+                changeView('view-auth');
+            }
+        });
+
+        function changeView(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // LÓGICA DE LOGIN/CADASTRO UNIFICADA
+        function toggleAuthMode() {
+            isSignUpMode = !isSignUpMode;
+            document.getElementById('auth-title').innerText = isSignUpMode ? "Criar Conta" : "Buraco Mendonça";
+            document.getElementById('btn-auth-principal').innerText = isSignUpMode ? "Cadastrar" : "Entrar";
+            document.getElementById('auth-toggle-btn').innerText = isSignUpMode ? "Já tem conta? Entrar" : "Não tem conta? Cadastre-se";
+        }
+
+        async function authAction() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('pass').value;
+            if (!email || !password) return alert("Preencha e-mail e senha.");
+
+            if (isSignUpMode) {
+                const { data, error } = await _supabase.auth.signUp({ email, password });
+                if (error) alert("Erro: " + error.message);
+                else alert("Cadastro realizado! Verifique seu e-mail ou faça login.");
+            } else {
+                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) alert("Erro: " + error.message);
+                else {
+                    currentUser = data.user;
+                    document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
+                    changeView('view-menu');
+                }
+            }
+        }
+
+        async function logout() {
+            await _supabase.auth.signOut();
+            window.location.replace(window.location.pathname);
+        }
+
+        // SALAS E REALTIME
+        async function abrirSalas() {
+            changeView('view-salas');
+            carregarSalas();
+            _supabase.channel('lobby-channel').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+                car
