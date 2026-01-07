@@ -71,16 +71,16 @@
                         <p class="text-[10px] text-gray-400 font-bold uppercase">Nós</p>
                         <p id="placar-d1" class="text-2xl font-black text-yellow-500">0</p>
                         <div id="ctrl-d1" class="hidden flex gap-3 mt-1">
-                            <button onclick="pontuar('d1_pontos', -10)" class="bg-red-600/40 w-8 h-8 rounded-full border border-red-500 text-white">-</button>
-                            <button onclick="pontuar('d1_pontos', 10)" class="bg-green-600/40 w-8 h-8 rounded-full border border-green-500 text-white">+</button>
+                            <button onclick="pontuar('d1_pontos', -10)" class="bg-red-600/40 w-6 h-6 rounded-full border border-red-500 text-xs">-</button>
+                            <button onclick="pontuar('d1_pontos', 10)" class="bg-green-600/40 w-6 h-6 rounded-full border border-green-500 text-xs">+</button>
                         </div>
                     </div>
                     <div class="text-center">
                         <p class="text-[10px] text-gray-400 font-bold uppercase">Eles</p>
                         <p id="placar-d2" class="text-2xl font-black text-yellow-500">0</p>
                         <div id="ctrl-d2" class="hidden flex gap-3 mt-1">
-                            <button onclick="pontuar('d2_pontos', -10)" class="bg-red-600/40 w-8 h-8 rounded-full border border-red-500 text-white">-</button>
-                            <button onclick="pontuar('d2_pontos', 10)" class="bg-green-600/40 w-8 h-8 rounded-full border border-green-500 text-white">+</button>
+                            <button onclick="pontuar('d2_pontos', -10)" class="bg-red-600/40 w-6 h-6 rounded-full border border-red-500 text-xs">-</button>
+                            <button onclick="pontuar('d2_pontos', 10)" class="bg-green-600/40 w-6 h-6 rounded-full border border-green-500 text-xs">+</button>
                         </div>
                     </div>
                 </div>
@@ -91,14 +91,14 @@
                 <span id="label-mesa" class="text-white/10 uppercase tracking-widest font-black text-2xl">MESA</span>
                 <div class="flex gap-10">
                     <div id="monte-fechado" onclick="comprarDoMonte()" class="flex flex-col items-center gap-2">
-                        <div class="w-20 h-28 bg-blue-800 rounded-lg border-2 border-white/30 flex items-center justify-center shadow-2xl cursor-pointer hover:bg-blue-700">
-                            <div class="w-14 h-20 border border-white/10 rounded"></div>
+                        <div class="w-20 h-28 bg-blue-800 rounded-lg border-2 border-white/30 flex items-center justify-center shadow-2xl cursor-pointer">
+                            <div class="w-10 h-14 border border-white/10 rounded"></div>
                         </div>
                         <span class="text-[10px] font-bold opacity-50 uppercase">Monte</span>
                     </div>
                     <div onclick="comprarLixoCompleto()" class="flex flex-col items-center gap-2">
                         <div id="area-lixo" class="w-20 h-28 bg-black/20 rounded-lg border-2 border-dashed border-white/10 flex items-center justify-center shadow-inner cursor-pointer relative">
-                            <span id="txt-lixo" class="text-white/10 text-xs font-bold uppercase">Vazio</span>
+                            <span class="text-white/10 text-[10px] uppercase font-bold">Lixo</span>
                         </div>
                         <span class="text-[10px] font-bold opacity-50 uppercase">Lixo</span>
                     </div>
@@ -108,7 +108,7 @@
             <div class="bg-black/40 p-6 border-t border-white/10">
                 <div class="flex justify-between items-center mb-4">
                     <p class="text-[10px] font-bold text-yellow-500 uppercase">Sua Mão</p>
-                    <button id="btn-descartar" onclick="descartarSelecionada()" class="hidden bg-yellow-500 text-black px-4 py-1 rounded-full text-[10px] font-black shadow-lg">DESCARTAR CARTA</button>
+                    <button id="btn-descartar" onclick="descartarSelecionada()" class="hidden bg-yellow-500 text-black px-4 py-1 rounded-full text-[10px] font-black shadow-lg uppercase">Descartar</button>
                 </div>
                 <div class="overflow-x-auto flex gap-2 justify-start min-h-[100px]" id="mao-jogador"></div>
             </div>
@@ -122,11 +122,15 @@
             <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
             <h2 class="text-2xl font-bold text-blue-400">Ranking</h2>
         </section>
+        <section id="view-torneios" class="hidden p-6 text-center">
+            <button onclick="changeView('view-menu')" class="mb-4">⬅️ Voltar</button>
+            <h2 class="text-2xl font-bold text-purple-400">Torneios</h2>
+        </section>
     </div>
 
     <script>
         const supabaseUrl = 'https://bynafmrslfrsmeemcski.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6WTQdlUsDTQMY-6RMFBokbJCUySw';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUser = null;
@@ -134,29 +138,19 @@
         let minhaMao = [];
         let lixoGlobal = [];
         let indexSelecionado = null;
-        let jaComprouNessaRodada = false;
+        let jaComprou = false;
+        let canalMesa = null;
 
-        // --- SISTEMA DE LOGIN BLINDADO ---
-        async function checkUser() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            handleAuth(session?.user);
-        }
-
+        // AUTH
         _supabase.auth.onAuthStateChange((event, session) => {
-            handleAuth(session?.user);
-        });
-
-        function handleAuth(user) {
-            currentUser = user;
-            if (user) {
-                document.getElementById('user-display').innerText = user.email.split('@')[0];
-                if (!document.getElementById('view-auth').classList.contains('hidden')) {
-                    changeView('view-menu');
-                }
+            currentUser = session?.user || null;
+            if (currentUser) {
+                document.getElementById('user-display').innerText = currentUser.email.split('@')[0];
+                if (!document.getElementById('view-auth').classList.contains('hidden')) changeView('view-menu');
             } else {
                 changeView('view-auth');
             }
-        }
+        });
 
         async function fazerLogin() {
             const email = document.getElementById('email').value.trim();
@@ -172,181 +166,144 @@
             if (error) alert(error.message); else alert("Verifique seu e-mail!");
         }
 
-        async function fazerLogout() { 
-            await _supabase.auth.signOut(); 
-            location.reload(); 
-        }
+        async function fazerLogout() { await _supabase.auth.signOut(); location.reload(); }
 
         function changeView(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            const el = document.getElementById(id);
-            if(el) el.classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
         }
 
         function alternarModoAuth() {
             const isLogin = document.getElementById('btn-signup-action').classList.contains('hidden');
-            document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Buraco Mendonça";
             document.getElementById('btn-login-action').classList.toggle('hidden', isLogin);
             document.getElementById('btn-signup-action').classList.toggle('hidden', !isLogin);
+            document.getElementById('auth-title').innerText = isLogin ? "Criar Conta" : "Buraco Mendonça";
         }
 
-        // --- LÓGICA DE SALAS E JOGO ---
+        // SALAS
         async function abrirSalas() {
             changeView('view-salas');
             carregarSalas();
-            _supabase.channel('game_sync').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
-                carregarSalas();
-                if (salaAtivaId) atualizarDadosMesa();
-            }).subscribe();
+            _supabase.channel('lobby').on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, carregarSalas).subscribe();
         }
 
         async function carregarSalas() {
             const { data: salas } = await _supabase.from('salas').select('*').order('created_at', { ascending: false });
             const container = document.getElementById('lista-salas');
             container.innerHTML = '';
-            if (salas) {
-                salas.forEach(sala => {
-                    const souDono = currentUser && currentUser.id === sala.criador_id;
-                    container.innerHTML += `
-                        <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10 shadow-lg">
-                            <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
-                                <p class="font-bold text-lg">${sala.nome}</p>
-                                <p class="text-[10px] text-yellow-500 uppercase font-bold">Criador: ${sala.criador_nome}</p>
-                            </div>
-                            ${souDono ? `<button onclick="fecharSala('${sala.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
-                        </div>`;
-                });
-            }
+            salas?.forEach(sala => {
+                const souDono = currentUser?.id === sala.criador_id;
+                container.innerHTML += `
+                    <div class="bg-card-dark p-5 rounded-2xl flex justify-between items-center border border-white/10">
+                        <div onclick="entrarNaMesa('${sala.id}', '${sala.nome}', '${sala.criador_id}')" class="flex-1 cursor-pointer">
+                            <p class="font-bold">${sala.nome}</p>
+                            <p class="text-[10px] text-yellow-500 uppercase">Criador: ${sala.criador_nome}</p>
+                        </div>
+                        ${souDono ? `<button onclick="fecharSala('${sala.id}')" class="text-red-500 font-bold p-2">✕</button>` : ''}
+                    </div>`;
+            });
         }
 
+        // MESA E SINCRONIZAÇÃO
         async function entrarNaMesa(id, nome, criadorId) {
             salaAtivaId = id;
             changeView('view-mesa');
             document.getElementById('label-mesa').innerText = nome;
-            const souDono = currentUser && currentUser.id === criadorId;
+            const souDono = currentUser?.id === criadorId;
             document.getElementById('btn-encerrar').classList.toggle('hidden', !souDono);
             document.getElementById('ctrl-d1').classList.toggle('hidden', !souDono);
             document.getElementById('ctrl-d2').classList.toggle('hidden', !souDono);
             if(souDono) document.getElementById('btn-encerrar').onclick = () => fecharSala(id);
             
-            jaComprouNessaRodada = false;
-            gerarMaoInicial();
-            atualizarDadosMesa();
-        }
-
-        function gerarMaoInicial() {
-            minhaMao = [];
-            for(let i=0; i<11; i++) minhaMao.push(gerarCartaAleatoria());
-            renderizarMao();
-        }
-
-        function gerarCartaAleatoria() {
-            const n = ['♥️', '♦️', '♣️', '♠️'][Math.floor(Math.random()*4)];
-            const v = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'][Math.floor(Math.random()*13)];
-            return { v, n, cor: (n === '♥️' || n === '♦️') ? 'text-red-600' : 'text-black' };
-        }
-
-        function renderizarMao() {
-            const container = document.getElementById('mao-jogador');
-            if(!container) return;
-            container.innerHTML = '';
-            minhaMao.forEach((carta, i) => {
-                const sel = (indexSelecionado === i) ? 'card-selected' : '';
-                container.innerHTML += `
-                    <div onclick="selecionarCarta(${i})" class="card-hand ${sel}">
-                        <span>${carta.v}</span>
-                        <span class="${carta.cor} text-2xl">${carta.n}</span>
-                    </div>`;
-            });
-        }
-
-        function selecionarCarta(i) {
-            indexSelecionado = i;
-            document.getElementById('btn-descartar').classList.remove('hidden');
-            renderizarMao();
-        }
-
-        async function descartarSelecionada() {
-            if(indexSelecionado === null) return;
-            const carta = minhaMao[indexSelecionado];
-            const novoLixo = [...lixoGlobal, carta];
-            
-            await _supabase.from('salas').update({ lixo: novoLixo }).eq('id', salaAtivaId);
-            
-            minhaMao.splice(indexSelecionado, 1);
-            indexSelecionado = null;
-            jaComprouNessaRodada = false;
+            jaComprou = false;
             document.getElementById('monte-fechado').classList.remove('disabled-deck');
-            document.getElementById('btn-descartar').classList.add('hidden');
-            renderizarMao();
+            gerarMaoInicial();
+
+            if (canalMesa) canalMesa.unsubscribe();
+            canalMesa = _supabase.channel(`mesa_${id}`)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas', filter: `id=eq.${id}` }, (payload) => {
+                    atualizarEstadoMesa(payload.new);
+                })
+                .subscribe();
+
+            const { data: sala } = await _supabase.from('salas').select('*').eq('id', id).maybeSingle();
+            if (sala) atualizarEstadoMesa(sala);
+        }
+
+        function atualizarEstadoMesa(dados) {
+            document.getElementById('placar-d1').innerText = dados.d1_pontos || 0;
+            document.getElementById('placar-d2').innerText = dados.d2_pontos || 0;
+            lixoGlobal = dados.lixo || [];
+            renderizarLixo();
         }
 
         function renderizarLixo() {
             const area = document.getElementById('area-lixo');
-            if(!area) return;
-            if(lixoGlobal && lixoGlobal.length > 0) {
+            if (lixoGlobal.length > 0) {
                 const topo = lixoGlobal[lixoGlobal.length - 1];
                 area.innerHTML = `<div class="card-hand scale-75"><span>${topo.v}</span><span class="${topo.cor} text-2xl">${topo.n}</span></div>`;
             } else {
-                area.innerHTML = `<span class="text-white/10 text-xs font-bold uppercase">Vazio</span>`;
+                area.innerHTML = `<span class="text-white/10 text-[10px] uppercase font-bold">Lixo</span>`;
             }
         }
 
+        // AÇÕES
         function comprarDoMonte() {
-            if(jaComprouNessaRodada) return;
+            if (jaComprou) return;
             minhaMao.push(gerarCartaAleatoria());
-            jaComprouNessaRodada = true;
+            jaComprou = true;
             document.getElementById('monte-fechado').classList.add('disabled-deck');
             renderizarMao();
         }
 
         async function comprarLixoCompleto() {
-            if(jaComprouNessaRodada || !lixoGlobal || lixoGlobal.length === 0) return;
+            if (jaComprou || lixoGlobal.length === 0) return;
             minhaMao = [...minhaMao, ...lixoGlobal];
             await _supabase.from('salas').update({ lixo: [] }).eq('id', salaAtivaId);
-            jaComprouNessaRodada = true;
+            jaComprou = true;
             document.getElementById('monte-fechado').classList.add('disabled-deck');
             renderizarMao();
         }
 
-        async function atualizarDadosMesa() {
-            if(!salaAtivaId) return;
-            const { data: sala } = await _supabase.from('salas').select('*').eq('id', salaAtivaId).maybeSingle();
-            if(sala) {
-                document.getElementById('placar-d1').innerText = sala.d1_pontos || 0;
-                document.getElementById('placar-d2').innerText = sala.d2_pontos || 0;
-                lixoGlobal = sala.lixo || [];
-                renderizarLixo();
-            }
+        async function descartarSelecionada() {
+            if (indexSelecionado === null) return;
+            const carta = minhaMao[indexSelecionado];
+            const novoLixo = [...lixoGlobal, carta];
+            await _supabase.from('salas').update({ lixo: novoLixo }).eq('id', salaAtivaId);
+            minhaMao.splice(indexSelecionado, 1);
+            indexSelecionado = null;
+            jaComprou = false;
+            document.getElementById('monte-fechado').classList.remove('disabled-deck');
+            document.getElementById('btn-descartar').classList.add('hidden');
+            renderizarMao();
         }
 
+        function gerarMaoInicial() { minhaMao = Array.from({length: 11}, gerarCartaAleatoria); renderizarMao(); }
+        function gerarCartaAleatoria() {
+            const n = ['♥️', '♦️', '♣️', '♠️'][Math.floor(Math.random()*4)];
+            const v = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'][Math.floor(Math.random()*13)];
+            return { v, n, cor: (n === '♥️' || n === '♦️') ? 'text-red-600' : 'text-black' };
+        }
+        function renderizarMao() {
+            const container = document.getElementById('mao-jogador');
+            container.innerHTML = '';
+            minhaMao.forEach((carta, i) => {
+                const sel = (indexSelecionado === i) ? 'card-selected' : '';
+                container.innerHTML += `<div onclick="selecionarCarta(${i})" class="card-hand ${sel}"><span>${carta.v}</span><span class="${carta.cor} text-2xl">${carta.n}</span></div>`;
+            });
+        }
+        function selecionarCarta(i) { indexSelecionado = i; document.getElementById('btn-descartar').classList.remove('hidden'); renderizarMao(); }
         async function pontuar(coluna, valor) {
             const elId = coluna === 'd1_pontos' ? 'placar-d1' : 'placar-d2';
             const novo = (parseInt(document.getElementById(elId).innerText) || 0) + valor;
             await _supabase.from('salas').update({ [coluna]: novo }).eq('id', salaAtivaId);
         }
-
         async function criarNovaSala() {
             const n = prompt("Nome da Mesa:");
-            if (n && currentUser) {
-                await _supabase.from('salas').insert([{ 
-                    nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0], 
-                    d1_pontos: 0, d2_pontos: 0, lixo: [] 
-                }]);
-            }
+            if (n && currentUser) await _supabase.from('salas').insert([{ nome: n, criador_id: currentUser.id, criador_nome: currentUser.email.split('@')[0], d1_pontos: 0, d2_pontos: 0, lixo: [] }]);
         }
-
-        async function fecharSala(id) {
-            if (confirm("ENCERRAR MESA definitivamente?")) {
-                await _supabase.from('salas').delete().eq('id', id);
-                sairDaMesa();
-            }
-        }
-
-        function sairDaMesa() { salaAtivaId = null; changeView('view-menu'); }
-
-        // Inicializa verificando o usuário
-        checkUser();
+        async function fecharSala(id) { if (confirm("ENCERRAR MESA definitivamente?")) { await _supabase.from('salas').delete().eq('id', id); sairDaMesa(); } }
+        function sairDaMesa() { if(canalMesa) canalMesa.unsubscribe(); salaAtivaId = null; changeView('view-menu'); }
     </script>
 </body>
 </html>
