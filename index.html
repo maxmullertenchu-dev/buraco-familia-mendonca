@@ -3,236 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buraco Mendonça v2</title>
+    <title>Buraco Mendonça PRO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;900&display=swap" rel="stylesheet">
 
     <style>
-        :root { --gold: #ef4444; }
-        body { 
-            background: #0a0a0a; 
-            color: white; 
-            font-family: 'Inter', sans-serif; 
-            overflow: hidden; 
-            user-select: none;
-        }
+        body { background: #0a0a0a; color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
         .font-title { font-family: 'Archivo Black', sans-serif; }
+        .feltro { background: radial-gradient(circle, #065f46 0%, #064e3b 100%); border: 10px solid #27272a; box-shadow: inset 0 0 100px rgba(0,0,0,0.5); }
         
-        /* Estilo das Cartas */
         .card {
-            width: 70px;
-            height: 100px;
-            background: white;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 5px;
-            color: black;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
+            width: 65px; height: 95px; background: white; border-radius: 6px;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 4px; color: black; font-weight: 900; position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; transition: all 0.2s;
         }
-        .card:hover { transform: translateY(-10px); }
-        .card.selected { 
-            transform: translateY(-20px); 
-            border: 3px solid #eab308;
-            box-shadow: 0 0 15px #eab308;
-        }
+        .card.selected { transform: translateY(-15px) scale(1.05); border: 3px solid #eab308; box-shadow: 0 0 15px #eab308; z-index: 50; }
         .card-red { color: #ef4444; }
-        .card-black { color: #1a1a1a; }
-        .value { font-size: 1.2rem; line-height: 1; }
-        .suit-mini { font-size: 0.8rem; }
-        .suit-main { font-size: 2rem; align-self: center; }
+        .card-black { color: #18181b; }
+        .suit-main { font-size: 1.8rem; align-self: center; }
         
-        /* Layout da Mesa */
-        .feltro {
-            background: radial-gradient(circle, #065f46 0%, #064e3b 100%);
-            border: 12px solid #3f3f46;
-            box-shadow: inset 0 0 100px rgba(0,0,0,0.5);
-        }
-        .timer-active { animation: pulse 1s infinite; }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
+        /* Barra de rolagem customizada */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        .meld-group { background: rgba(255,255,255,0.05); padding: 5px; border-radius: 8px; display: flex; flex-direction: column; gap: -70px; }
     </style>
 </head>
-<body>
-
-<div id="master-container" class="w-full h-screen overflow-hidden flex flex-col">
-    
-    <section id="view-auth" class="flex-1 flex items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
-        <div class="w-full max-w-md bg-zinc-900 p-10 rounded-[40px] border border-white/10 shadow-2xl animate__animated animate__zoomIn">
-            <h1 class="font-title text-4xl text-center mb-2 tracking-tighter italic">BURACO<br><span class="text-yellow-500">MENDONÇA</span></h1>
-            <p class="text-center text-white/40 text-xs mb-8 uppercase tracking-widest">Acesse sua conta para jogar</p>
+<body class="bg-black">
+<div id="master-container" class="w-full h-screen flex flex-col overflow-hidden">
+    <section id="view-auth" class="flex-1 flex items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]">
+        <div class="w-full max-w-md bg-zinc-900/50 backdrop-blur-xl p-10 rounded-[40px] border border-white/10 shadow-2xl animate__animated animate__fadeIn">
+            <div class="text-center mb-10">
+                <h1 class="font-title text-5xl tracking-tighter italic leading-none">BURACO<br><span class="text-yellow-500">MENDONÇA</span></h1>
+                <p class="text-[10px] text-white/30 uppercase tracking-[0.3em] mt-4">Edição Profissional v2.0</p>
+            </div>
             
             <div class="space-y-4">
-                <input id="auth-email" type="email" placeholder="E-mail" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:outline-none focus:border-yellow-500 transition">
-                <input id="auth-pass" type="password" placeholder="Senha" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:outline-none focus:border-yellow-500 transition">
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-white/40 ml-4">E-mail</label>
+                    <input id="auth-email" type="email" placeholder="seu@email.com" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:outline-none focus:border-yellow-500 transition text-sm">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-white/40 ml-4">Senha</label>
+                    <input id="auth-pass" type="password" placeholder="••••••••" class="w-full bg-white/5 border border-white/10 p-4 rounded-2xl focus:outline-none focus:border-yellow-500 transition text-sm">
+                </div>
                 
-                <div class="grid grid-cols-2 gap-4 pt-4">
-                    <button onclick="Core.Auth.handle('login')" class="bg-yellow-500 text-black font-black py-4 rounded-2xl hover:scale-105 transition active:scale-95">ENTRAR</button>
-                    <button onclick="Core.Auth.handle('signup')" class="bg-white/10 text-white font-black py-4 rounded-2xl hover:bg-white/20 transition">CRIAR CONTA</button>
+                <div class="grid grid-cols-2 gap-4 pt-6">
+                    <button onclick="Core.Auth.handle('login')" class="bg-yellow-500 text-black font-black py-4 rounded-2xl hover:brightness-110 active:scale-95 transition shadow-lg shadow-yellow-500/10">ENTRAR</button>
+                    <button onclick="Core.Auth.handle('signup')" class="bg-white/5 text-white font-black py-4 rounded-2xl hover:bg-white/10 transition border border-white/10">CADASTRAR</button>
                 </div>
             </div>
         </div>
     </section>
-    <section id="view-menu" class="hidden flex-1 flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-sm text-center animate__animated animate__fadeInUp">
-            <div class="mb-8">
-                <p class="text-white/40 text-xs uppercase tracking-widest mb-1">Bem-vindo de volta,</p>
-                <h2 id="display-name" class="font-title text-3xl text-yellow-500">Jogador</h2>
+
+    <section id="view-menu" class="hidden flex-1 flex flex-col items-center justify-center p-6">
+        <div class="w-full max-w-sm animate__animated animate__backInUp">
+            <div class="text-center mb-12">
+                <div class="w-20 h-20 bg-yellow-500 rounded-full mx-auto mb-4 flex items-center justify-center shadow-2xl shadow-yellow-500/20">
+                    <span class="text-3xl">🃏</span>
+                </div>
+                <p class="text-white/40 text-[10px] uppercase tracking-widest mb-1">Jogador Autenticado</p>
+                <h2 id="display-name" class="font-title text-3xl text-white italic">---</h2>
             </div>
 
-            <div class="grid gap-4 w-full">
-                <button onclick="Core.Navigation.go('view-lobby')" class="group bg-white/5 border border-white/10 p-8 rounded-[35px] hover:bg-yellow-500 transition-all duration-300">
-                    <span class="block font-black text-2xl group-hover:text-black transition-colors italic">JOGAR AGORA</span>
-                    <span class="block text-[10px] text-white/40 group-hover:text-black/60 uppercase mt-2">Entrar no lobby de mesas</span>
+            <nav class="space-y-4">
+                <button onclick="Core.Navigation.go('view-lobby')" class="w-full group bg-white/5 border border-white/10 p-8 rounded-[35px] hover:bg-yellow-500 transition-all duration-300 shadow-xl">
+                    <span class="block font-black text-2xl group-hover:text-black transition-colors italic">BUSCAR MESAS</span>
+                    <span class="block text-[10px] text-white/30 group-hover:text-black/60 uppercase mt-2">Jogar em tempo real</span>
                 </button>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="alert('Estatísticas em breve!')" class="bg-white/5 border border-white/10 p-6 rounded-[30px] hover:bg-white/10 transition">
-                        <span class="block font-bold text-sm italic">PERFIL</span>
+                    <button onclick="alert('Histórico em breve')" class="bg-zinc-900 border border-white/5 p-6 rounded-[30px] hover:bg-zinc-800 transition">
+                        <span class="block font-bold text-xs text-white/60">ESTATÍSTICAS</span>
                     </button>
-                    <button onclick="Core.Auth.logout()" class="bg-red-500/10 border border-red-500/20 p-6 rounded-[30px] hover:bg-red-500 hover:text-white transition group">
-                        <span class="block font-bold text-sm italic group-hover:scale-110 transition">SAIR</span>
+                    <button onclick="Core.Auth.logout()" class="bg-red-500/5 border border-red-500/20 p-6 rounded-[30px] hover:bg-red-500 transition group">
+                        <span class="block font-bold text-xs text-red-500 group-hover:text-white">SAIR</span>
                     </button>
                 </div>
-            </div>
+            </nav>
         </div>
     </section>
-
-    <section id="view-lobby" class="hidden flex-1 flex flex-col p-6 max-w-4xl mx-auto w-full">
-        <div class="flex justify-between items-end mb-10">
+    <section id="view-lobby" class="hidden flex-1 flex flex-col p-6 max-w-5xl mx-auto w-full">
+        <div class="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 mb-12">
             <div>
-                <button onclick="Core.Navigation.go('view-menu')" class="text-white/40 text-xs hover:text-white transition mb-2">← VOLTAR AO MENU</button>
-                <h2 class="font-title text-4xl italic">MESAS <span class="text-yellow-500">ATIVAS</span></h2>
+                <button onclick="Core.Navigation.go('view-menu')" class="text-white/30 text-[10px] font-black tracking-widest hover:text-white transition flex items-center gap-2 mb-3">
+                    <span class="text-lg">←</span> VOLTAR AO MENU
+                </button>
+                <h2 class="font-title text-5xl italic leading-none">MESAS EM <br><span class="text-yellow-500 text-6xl">ABERTO</span></h2>
             </div>
-            <button onclick="Core.Game.createNewRoom()" class="bg-yellow-500 text-black font-black px-8 py-4 rounded-2xl hover:scale-105 transition shadow-[0_0_20px_rgba(234,179,8,0.3)]">
-                + CRIAR MESA
+            <button onclick="Core.Game.createNewRoom()" class="bg-yellow-500 text-black font-black px-10 py-5 rounded-[25px] hover:scale-105 active:scale-95 transition shadow-[0_15px_30px_rgba(234,179,8,0.2)]">
+                + CRIAR NOVA MESA
             </button>
         </div>
 
         <div id="room-list" class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
-            <div class="text-center py-20 opacity-20 italic">Carregando mesas...</div>
+            <div class="flex flex-col items-center justify-center h-64 opacity-20 italic">
+                <span class="text-4xl mb-2">🔍</span>
+                <p>Buscando mesas disponíveis...</p>
+            </div>
         </div>
     </section>
+
     <section id="view-mesa" class="hidden flex-1 flex flex-col relative overflow-hidden">
-        
-        <div class="h-16 bg-black/40 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-6 z-50">
-            <div class="flex gap-8">
-                <div class="flex flex-col">
-                    <span class="text-[9px] text-white/40 uppercase tracking-widest">Nós</span>
-                    <span id="score-us" class="font-title text-xl text-yellow-500">0000</span>
+        <div class="h-20 bg-black/80 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-8 z-50">
+            <div class="flex gap-10">
+                <div class="text-center">
+                    <span class="block text-[9px] text-white/30 uppercase tracking-[0.2em] font-black mb-1">EQUIPE A</span>
+                    <span id="score-a" class="font-title text-2xl text-yellow-500 leading-none">0000</span>
                 </div>
-                <div class="flex flex-col">
-                    <span class="text-[9px] text-white/40 uppercase tracking-widest">Eles</span>
-                    <span id="score-them" class="font-title text-xl text-white">0000</span>
+                <div class="text-center">
+                    <span class="block text-[9px] text-white/30 uppercase tracking-[0.2em] font-black mb-1">EQUIPE B</span>
+                    <span id="score-b" class="font-title text-2xl text-white leading-none">0000</span>
                 </div>
             </div>
 
             <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
-                <div class="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <div id="timer-progress" class="h-full bg-yellow-500 w-full transition-all duration-1000"></div>
+                <div id="turn-indicator" class="text-[11px] font-black tracking-[0.3em] uppercase text-yellow-500 mb-3 animate-pulse">Aguardando Jogadores</div>
+                <div class="w-64 h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                    <div id="timer-progress" class="h-full bg-gradient-to-r from-yellow-600 to-yellow-300 w-full transition-all duration-1000"></div>
                 </div>
-                <div id="turn-indicator" class="text-[10px] uppercase font-black tracking-widest mt-1 text-yellow-500 animate-pulse">Sua Vez</div>
             </div>
 
-            <button onclick="if(confirm('Sair da mesa?')) location.reload()" class="text-white/40 hover:text-red-500 transition text-xs font-bold uppercase">Sair</button>
+            <button onclick="Core.Game.leave()" class="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-xl text-[10px] font-black hover:bg-red-500 hover:text-white transition">ABANDONAR</button>
         </div>
 
-        <div class="flex-1 relative feltro flex flex-col p-4 overflow-hidden">
-            
-            <div class="flex justify-between items-start mb-4">
-                <div id="p-slot-0" class="w-24 h-12 border border-white/10 rounded-xl flex items-center justify-center text-[10px] font-black uppercase bg-black/20">P1: --</div>
-                <div id="p-slot-1" class="w-24 h-12 border border-white/10 rounded-xl flex items-center justify-center text-[10px] font-black uppercase bg-black/20">P2: --</div>
-                <div id="p-slot-2" class="w-24 h-12 border border-white/10 rounded-xl flex items-center justify-center text-[10px] font-black uppercase bg-black/20">P3: --</div>
-                <div id="p-slot-3" class="w-24 h-12 border border-white/10 rounded-xl flex items-center justify-center text-[10px] font-black uppercase bg-black/20">P4: --</div>
+        <div class="flex-1 relative feltro flex flex-col p-6 overflow-hidden">
+            <div class="flex justify-between items-center mb-8">
+                <div id="slot-0" class="p-slot"><span class="name">P1</span><span class="status">--</span></div>
+                <div id="slot-1" class="p-slot"><span class="name">P2</span><span class="status">--</span></div>
+                <div id="slot-2" class="p-slot"><span class="name">P3</span><span class="status">--</span></div>
+                <div id="slot-3" class="p-slot"><span class="name">P4</span><span class="status">--</span></div>
             </div>
 
-            <div class="flex-1 flex items-center justify-center gap-12">
-                <div id="draw-deck" onclick="Core.Game.handleAction('draw_deck')" class="group relative cursor-pointer">
-                    <div class="w-[70px] h-[100px] bg-zinc-800 rounded-lg border-2 border-white/20 shadow-2xl transform hover:scale-105 transition flex items-center justify-center">
-                        <span class="text-2xl opacity-20">🎴</span>
+            <div class="flex-1 flex items-center justify-center gap-16">
+                <div id="deck-area" onclick="Core.Game.handleAction('buy_deck')" class="relative group cursor-pointer">
+                    <div class="w-[70px] h-[100px] bg-zinc-900 rounded-lg border-2 border-white/20 shadow-2xl flex items-center justify-center transform group-hover:-translate-y-2 transition">
+                        <div class="text-white/10 text-4xl">🎴</div>
                     </div>
-                    <div class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white/50"><span id="deck-count">104</span> CARTAS</div>
+                    <div id="deck-count" class="absolute -bottom-7 left-1/2 -translate-x-1/2 text-[10px] font-black text-white/40">104</div>
                 </div>
 
-                <div id="table-discard" onclick="Core.Game.handleAction('draw_discard')" class="min-w-[80px] h-[110px] border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center relative hover:bg-white/5 transition cursor-pointer">
-                    <div id="discard-count" class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-white/50">LIXO: 0</div>
+                <div id="discard-pile" onclick="Core.Game.handleAction('buy_lixo')" class="min-w-[85px] h-[115px] border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center relative hover:bg-white/5 transition cursor-pointer">
+                    <div id="lixo-count" class="absolute -bottom-7 left-1/2 -translate-x-1/2 text-[10px] font-black text-white/40 italic">LIXO VAZIO</div>
                 </div>
             </div>
 
-            <div class="h-48 w-full grid grid-cols-2 gap-4 mt-4 overflow-y-auto custom-scrollbar">
-                <div id="melds-a" class="flex flex-wrap gap-2 content-start"></div>
-                <div id="melds-b" class="flex flex-wrap gap-2 content-start"></div>
+            <div class="h-56 grid grid-cols-2 gap-8 mt-4 overflow-y-auto custom-scrollbar">
+                <div id="melds-a" class="flex flex-wrap gap-4 content-start"></div>
+                <div id="melds-b" class="flex flex-wrap gap-4 content-start"></div>
             </div>
         </div>
 
-        <div class="h-44 bg-black/60 backdrop-blur-xl border-t border-white/10 flex flex-col items-center relative">
-            <div class="absolute -top-8 flex gap-4">
-                <button id="btn-meld" onclick="Core.Game.handleAction('meld')" class="hidden bg-emerald-500 text-white font-black px-6 py-2 rounded-full shadow-lg hover:bg-emerald-400 transition">BAIXAR JOGO</button>
-                <button id="btn-discard" onclick="Core.Game.handleAction('discard')" class="hidden bg-red-500 text-white font-black px-6 py-2 rounded-full shadow-lg hover:bg-red-400 transition">DESCARTAR</button>
-                <button onclick="Core.Game.sortHand()" class="bg-zinc-800 text-white/60 font-black px-6 py-2 rounded-full border border-white/10 hover:text-white transition uppercase text-[10px]">Ordenar</button>
+        <div class="h-48 bg-black/90 backdrop-blur-3xl border-t border-white/10 flex flex-col items-center justify-center relative z-50">
+            <div class="absolute -top-10 flex gap-4">
+                <button id="btn-meld" onclick="Core.Game.handleAction('meld')" class="hidden bg-emerald-600 text-white font-black px-8 py-3 rounded-2xl shadow-2xl hover:bg-emerald-500 transition scale-110">BAIXAR JOGO</button>
+                <button id="btn-discard" onclick="Core.Game.handleAction('discard')" class="hidden bg-red-600 text-white font-black px-8 py-3 rounded-2xl shadow-2xl hover:bg-red-500 transition scale-110">DESCARTAR</button>
+                <button onclick="Core.Game.sortHand()" class="bg-zinc-800 text-white/40 font-black px-6 py-3 rounded-2xl border border-white/5 hover:text-white transition uppercase text-[10px] tracking-widest">Ordenar Mão</button>
             </div>
 
-            <div id="player-hand" class="flex-1 flex items-center justify-center gap-[-20px] p-4 max-w-full overflow-x-auto">
+            <div id="player-hand" class="flex items-center justify-center gap-[-25px] px-10 max-w-full overflow-x-visible">
                 </div>
         </div>
     </section>
-    <div id="chat-container" class="fixed right-4 bottom-48 w-64 h-80 bg-black/80 backdrop-blur-md rounded-3xl border border-white/10 flex flex-col z-40 transform translate-x-[230px] hover:translate-x-0 transition-transform duration-500 shadow-2xl">
-        <div class="p-3 border-b border-white/10 text-[10px] font-black uppercase tracking-widest text-yellow-500">Chat da Mesa</div>
-        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-2 text-xs custom-scrollbar"></div>
-        <div class="p-2 flex gap-2">
-            <input id="chat-input" type="text" placeholder="Diga algo..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-yellow-500">
-            <button onclick="Core.Chat.send()" class="bg-yellow-500 text-black px-3 rounded-xl font-bold hover:scale-105 transition">➔</button>
+    <div id="chat-container" class="fixed right-6 bottom-52 w-72 h-96 bg-zinc-900/90 backdrop-blur-2xl rounded-[30px] border border-white/10 flex flex-col z-[60] shadow-2xl transform translate-x-[260px] hover:translate-x-0 transition-all duration-500 group">
+        <div class="p-4 border-b border-white/10 flex justify-between items-center">
+            <span class="text-[10px] font-black uppercase tracking-widest text-yellow-500">Mensagens</span>
+            <span class="text-[10px] text-white/20 group-hover:hidden">◀ DESLIZE</span>
+        </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 text-xs custom-scrollbar"></div>
+        <div class="p-4 flex gap-2">
+            <input id="chat-input" type="text" placeholder="Escreva..." class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-yellow-500 transition">
+            <button onclick="Core.Chat.send()" class="bg-yellow-500 text-black px-4 rounded-xl font-bold hover:scale-105 active:scale-95 transition">➔</button>
         </div>
     </div>
 
-    <section id="view-game-over" class="hidden fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
-        <div class="max-w-md w-full text-center">
-            <h2 class="font-title text-6xl text-yellow-500 mb-4 italic">FIM DE<br>PARTIDA</h2>
-            <div id="winner-text" class="text-2xl font-black mb-8 uppercase tracking-widest">VITÓRIA DOS MENDONÇAS</div>
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                    <span class="block text-[10px] text-white/40 uppercase">Nós</span>
-                    <span id="final-pts-a" class="text-2xl font-bold">0</span>
+    <section id="view-game-over" class="hidden fixed inset-0 bg-black/95 backdrop-blur-2xl z-[100] flex items-center justify-center p-6">
+        <div class="max-w-md w-full text-center animate__animated animate__zoomIn">
+            <h2 class="font-title text-7xl text-yellow-500 mb-2 italic leading-none">FIM DE<br>JOGO</h2>
+            <div id="winner-label" class="text-xl font-black mb-10 tracking-[0.3em] uppercase">VITÓRIA EQUIPE A</div>
+            
+            <div class="grid grid-cols-2 gap-6 mb-10">
+                <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
+                    <p class="text-[10px] text-white/30 uppercase mb-2">Nós</p>
+                    <p id="final-score-a" class="text-3xl font-black">0</p>
                 </div>
-                <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                    <span class="block text-[10px] text-white/40 uppercase">Eles</span>
-                    <span id="final-pts-b" class="text-2xl font-bold">0</span>
+                <div class="bg-white/5 p-6 rounded-3xl border border-white/10">
+                    <p class="text-[10px] text-white/30 uppercase mb-2">Eles</p>
+                    <p id="final-score-b" class="text-3xl font-black">0</p>
                 </div>
             </div>
-            <button onclick="location.reload()" class="w-full bg-yellow-500 text-black font-black py-4 rounded-2xl hover:scale-105 transition">VOLTAR AO LOBBY</button>
+            <button onclick="location.reload()" class="w-full bg-yellow-500 text-black font-black py-5 rounded-2xl hover:scale-105 transition shadow-2xl">VOLTAR AO INÍCIO</button>
         </div>
     </section>
+</div>
 
-</div> <script>
+<script>
 // 7. CONFIGURAÇÃO DO BANCO (SUPABASE)
 const _supabase = supabase.createClient('https://bynafmrslfrsmeemcski.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw');
 
-// 8. MOTOR CORE DO SISTEMA
+// 8. CORE ENGINE
 const Core = {
     user: null, roomID: null, myPos: 0, hand: [], selected: [], timer: 90, timerRef: null,
     
+    // Regras e Pontuação
     Config: {
         suits: ['♥️','♦️','♣️','♠️'],
         values: ['A','2','3','4','5','6','7','8','9','10','J','Q','K'],
+        points: {'A':15, '2':20, '3':5, '4':5, '5':5, '6':5, '7':5, '8':10, '9':10, '10':10, 'J':10, 'Q':10, 'K':10},
         order: {'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14,'2':15}
     },
 
-    // AUTENTICAÇÃO
+    // Sistema de Acesso
     Auth: {
         async handle(type) {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
-            if(!email || !pass) return alert("Preencha e-mail e senha!");
+            if(!email || !pass) return alert("Preencha todos os campos.");
 
             const { data, error } = type === 'login' ? 
                 await _supabase.auth.signInWithPassword({ email, password: pass }) :
@@ -251,7 +241,7 @@ const Core = {
         }
     },
 
-    // NAVEGAÇÃO ENTRE TELAS
+    // Navegação de Telas
     Navigation: {
         go(viewId) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -265,84 +255,188 @@ const Core = {
     }
 };
 </script>
-// CONTINUAÇÃO DO OBJETO CORE...
+// CONTINUAÇÃO DO OBJETO CORE... cole logo após o fechamento de Navigation: { ... },
+
     Lobby: {
         async refresh() {
-            const { data } = await _supabase.from('salas').select('*').order('created_at', {ascending: false});
+            const { data, error } = await _supabase.from('salas').select('*').order('created_at', {ascending: false});
             const list = document.getElementById('room-list');
-            if(!list) return;
-            list.innerHTML = data && data.length > 0 ? data.map(room => `
-                <div onclick="Core.Game.join('${room.id}')" class="bg-white/5 p-6 rounded-[25px] flex justify-between items-center border border-white/5 hover:bg-white/10 transition cursor-pointer group">
-                    <div>
-                        <h3 class="font-black text-lg text-yellow-500">${room.nome}</h3>
-                        <p class="text-[10px] text-white/40 uppercase tracking-widest">Mestre: ${room.criador_nome}</p>
+            if(!list || error) return;
+            
+            list.innerHTML = data.length > 0 ? data.map(room => `
+                <div onclick="Core.Game.join('${room.id}')" class="bg-white/5 p-8 rounded-[35px] border border-white/5 flex justify-between items-center hover:bg-white/10 transition cursor-pointer group shadow-lg">
+                    <div class="flex items-center gap-6">
+                        <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500 font-black">
+                            ${room.estado.jogadores ? room.estado.jogadores.length : 0}/4
+                        </div>
+                        <div>
+                            <h3 class="font-black text-xl text-white italic group-hover:text-yellow-500 transition">${room.nome}</h3>
+                            <p class="text-[9px] text-white/30 uppercase tracking-widest mt-1">Mestre: ${room.criador_nome}</p>
+                        </div>
                     </div>
-                    <div class="bg-yellow-500 text-black px-5 py-2 rounded-xl font-black text-xs group-hover:scale-110 transition">ENTRAR</div>
-                </div>`).join('') : '<div class="text-center py-10 opacity-20 italic">Nenhuma mesa aberta.</div>';
+                    <div class="bg-yellow-500 text-black px-8 py-3 rounded-2xl font-black text-xs group-hover:scale-110 transition shadow-xl">ENTRAR</div>
+                </div>
+            `).join('') : '<div class="text-center py-20 opacity-20 italic">Nenhuma mesa encontrada. Crie a sua agora!</div>';
         }
     },
 
     Game: {
         state: null,
+        
         async createNewRoom() {
-            const nome = prompt("Nome da Mesa Mendonça:");
+            const nome = prompt("Nome da Mesa:");
             if(!nome) return;
+
+            // Estado Inicial Completo do Buraco
             const initialState = {
-                vez: 0, fase: 'buy', lixo: [], monte: 104, ptsA: 0, ptsB: 0, 
-                melds: { a: [], b: [] }, chat: [], finalizado: false
+                vez: 0,
+                fase: 'buy', // buy, discard
+                monte: 104,
+                lixo: [],
+                jogadores: [{ id: Core.user.id, nome: Core.user.email.split('@')[0] }],
+                melds: { a: [], b: [] },
+                pts: { a: 0, b: 0 },
+                mortos: { a: true, b: true },
+                chat: [],
+                finalizado: false
             };
-            const { data } = await _supabase.from('salas').insert([{
-                nome: nome, criador_nome: Core.user.email.split('@')[0], estado: initialState
+
+            const { data, error } = await _supabase.from('salas').insert([{
+                nome: nome,
+                criador_nome: Core.user.email.split('@')[0],
+                estado: initialState
             }]).select();
+
             if(data) this.join(data[0].id);
         },
 
         async join(id) {
             Core.roomID = id;
             Core.Navigation.go('view-mesa');
-            if(Core.hand.length === 0) this.generateInitialHand();
 
-            // Escuta atualizações em tempo real
-            _supabase.channel(`room_${id}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas' }, 
-                payload => this.sync(payload.new)).subscribe();
+            // Canal de Tempo Real
+            _supabase.channel(`room_${id}`)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas' }, payload => {
+                    this.sync(payload.new);
+                })
+                .subscribe();
 
             const { data } = await _supabase.from('salas').select('*').eq('id', id).single();
-            this.sync(data);
-        },
-
-        sync(data) {
-            this.state = data.estado;
-            document.getElementById('score-us').innerText = this.state.ptsA;
-            document.getElementById('score-them').innerText = this.state.ptsB;
-            document.getElementById('deck-count').innerText = this.state.monte;
-            document.getElementById('discard-count').innerText = `LIXO: ${this.state.lixo.length}`;
             
-            this.renderHand();
-            Core.Chat.render();
-            this.manageTimers();
-            this.updateControls();
+            // Lógica de entrada na mesa (posicionamento)
+            if(!data.estado.jogadores.find(p => p.id === Core.user.id) && data.estado.jogadores.length < 4) {
+                data.estado.jogadores.push({ id: Core.user.id, nome: Core.user.email.split('@')[0] });
+                await _supabase.from('salas').update({ estado: data.estado }).eq('id', id);
+            }
+
+            Core.myPos = data.estado.jogadores.findIndex(p => p.id === Core.user.id);
+            if(Core.hand.length === 0) this.generateInitialHand();
+            this.sync(data);
         },
 
         generateInitialHand() {
             Core.hand = [];
+            // Em um jogo real, isso viria do monte compartilhado. 
+            // Para esta versão, geramos 11 cartas iniciais.
             for(let i=0; i<11; i++) {
-                const s = Core.Config.suits[Math.floor(Math.random()*4)];
-                const v = Core.Config.values[Math.floor(Math.random()*13)];
-                Core.hand.push({ v, n: s, cor: (s==='♥️'||s==='♦️') ? 'card-red' : 'card-black', uid: Math.random() });
+                Core.hand.push(this.createRandomCard());
             }
             this.sortHand();
+        },
+
+        createRandomCard() {
+            const suit = Core.Config.suits[Math.floor(Math.random() * 4)];
+            const value = Core.Config.values[Math.floor(Math.random() * 13)];
+            return {
+                v: value,
+                n: suit,
+                cor: (suit === '♥️' || suit === '♦️') ? 'card-red' : 'card-black',
+                id: Math.random().toString(36).substr(2, 9)
+            };
+        },
+
+        sortHand() {
+            Core.hand.sort((a, b) => {
+                if(a.n !== b.n) return a.n.localeCompare(b.n);
+                return Core.Config.order[a.v] - Core.Config.order[b.v];
+            });
+            this.renderHand();
+        }
+    }
+                // CONTINUAÇÃO DO OBJETO Core.Game: { ... } - Cole após o fechamento de sortHand()
+
+        sync(data) {
+            this.state = data.estado;
+            
+            // Atualiza Placar e Contadores
+            document.getElementById('score-a').innerText = String(this.state.pts.a).padStart(4, '0');
+            document.getElementById('score-b').innerText = String(this.state.pts.b).padStart(4, '0');
+            document.getElementById('deck-count').innerText = this.state.monte;
+            document.getElementById('lixo-count').innerText = this.state.lixo.length > 0 ? `LIXO: ${this.state.lixo.length}` : "LIXO VAZIO";
+            
+            // Renderiza o Lixo (mostra apenas a última carta se houver)
+            const discardPile = document.getElementById('discard-pile');
+            if(this.state.lixo.length > 0) {
+                const topCard = this.state.lixo[this.state.lixo.length - 1];
+                discardPile.innerHTML = this.renderSingleCard(topCard);
+            } else {
+                discardPile.innerHTML = '<div class="text-white/10 text-2xl">📥</div>';
+            }
+
+            // Atualiza Slots de Jogadores
+            for(let i=0; i<4; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                const player = this.state.jogadores[i];
+                if(slot) {
+                    slot.classList.toggle('border-yellow-500', this.state.vez === i);
+                    slot.querySelector('.name').innerText = player ? player.nome : 'Vazio';
+                    slot.querySelector('.status').innerText = this.state.vez === i ? 'Sua Vez' : (player ? 'Esperando' : '--');
+                }
+            }
+
+            // Renderiza Jogos Baixados
+            this.renderMelds();
+            this.renderHand();
+            this.updateControls();
+            Core.Chat.render();
+            this.manageTimers();
+            
+            if(this.state.finalizado) this.showGameOver();
+        },
+
+        renderSingleCard(c) {
+            return `
+                <div class="card ${c.cor} scale-90">
+                    <div class="value">${c.v}</div>
+                    <div class="suit-mini">${c.n}</div>
+                    <div class="suit-main">${c.n}</div>
+                    <div class="value self-end rotate-180">${c.v}</div>
+                </div>`;
         },
 
         renderHand() {
             const container = document.getElementById('player-hand');
             if(!container) return;
             container.innerHTML = Core.hand.map((c, i) => `
-                <div onclick="Core.Game.selectCard(${i})" class="card ${c.cor} ${Core.selected.includes(i)?'selected':''}">
+                <div onclick="Core.Game.selectCard(${i})" class="card ${c.cor} ${Core.selected.includes(i) ? 'selected' : ''}" style="margin-left: -30px; z-index: ${i}">
                     <div class="value">${c.v}</div>
                     <div class="suit-mini">${c.n}</div>
                     <div class="suit-main">${c.n}</div>
                     <div class="value self-end rotate-180">${c.v}</div>
                 </div>`).join('');
+        },
+
+        renderMelds() {
+            const drawMelds = (team, elementId) => {
+                const target = document.getElementById(elementId);
+                target.innerHTML = this.state.melds[team].map(group => `
+                    <div class="meld-group">
+                        ${group.map(c => this.renderSingleCard(c)).join('')}
+                    </div>
+                `).join('');
+            };
+            drawMelds('a', 'melds-a');
+            drawMelds('b', 'melds-b');
         },
 
         selectCard(i) {
@@ -352,20 +446,103 @@ const Core = {
             this.updateControls();
         },
 
-        sortHand() {
-            Core.hand.sort((a, b) => {
-                if(a.n !== b.n) return a.n.localeCompare(b.n);
-                return Core.Config.order[a.v] - Core.Config.order[b.v];
-            });
-            this.renderHand();
+        updateControls() {
+            const isMe = this.state.vez === Core.myPos;
+            document.getElementById('btn-meld').classList.toggle('hidden', !isMe || Core.selected.length < 3);
+            document.getElementById('btn-discard').classList.toggle('hidden', !isMe || Core.selected.length !== 1 || this.state.fase !== 'discard');
         },
 
-        updateControls() {
-            const isMe = this.state && this.state.vez === Core.myPos;
-            const btnMeld = document.getElementById('btn-meld');
-            const btnDisc = document.getElementById('btn-discard');
-            if(btnMeld) btnMeld.classList.toggle('hidden', !isMe || Core.selected.length < 3);
-            if(btnDisc) btnDisc.classList.toggle('hidden', !isMe || Core.selected.length !== 1 || this.state.fase !== 'discard');
+        async handleAction(type) {
+            if(this.state.vez !== Core.myPos) return alert("Não é sua vez!");
+
+            if(type === 'buy_deck' && this.state.fase === 'buy') {
+                const newCard = this.createRandomCard();
+                Core.hand.push(newCard);
+                this.state.monte--;
+                this.state.fase = 'discard';
+                await this.save();
+            }
+
+            if(type === 'buy_lixo' && this.state.fase === 'buy' && this.state.lixo.length > 0) {
+                Core.hand.push(...this.state.lixo);
+                this.state.lixo = [];
+                this.state.fase = 'discard';
+                await this.save();
+            }
+
+            if(type === 'discard' && this.state.fase === 'discard') {
+                const card = Core.hand.splice(Core.selected[0], 1)[0];
+                this.state.lixo.push(card);
+                this.state.vez = (this.state.vez + 1) % this.state.jogadores.length;
+                this.state.fase = 'buy';
+                Core.selected = [];
+                await this.save();
+            }
+        },
+
+        async save() {
+            await _supabase.from('salas').update({ estado: this.state }).eq('id', Core.roomID);
+        }
+                // CONTINUAÇÃO DO OBJETO Core.Game: { ... } - Cole após o fechamento de save()
+
+        async handleAction(type) {
+            // Re-checa se é a vez para segurança
+            if(this.state.vez !== Core.myPos) return alert("Não é sua vez!");
+
+            if(type === 'buy_deck' && this.state.fase === 'buy') {
+                const newCard = this.createRandomCard();
+                Core.hand.push(newCard);
+                this.state.monte--;
+                this.state.fase = 'discard';
+                await this.save();
+            }
+
+            if(type === 'buy_lixo' && this.state.fase === 'buy' && this.state.lixo.length > 0) {
+                Core.hand.push(...this.state.lixo);
+                this.state.lixo = [];
+                this.state.fase = 'discard';
+                this.sortHand();
+                await this.save();
+            }
+
+            if(type === 'discard' && this.state.fase === 'discard') {
+                const card = Core.hand.splice(Core.selected[0], 1)[0];
+                this.state.lixo.push(card);
+                this.state.vez = (this.state.vez + 1) % this.state.jogadores.length;
+                this.state.fase = 'buy';
+                Core.selected = [];
+                await this.save();
+            }
+
+            if(type === 'meld') {
+                this.processMeld();
+            }
+        },
+
+        processMeld() {
+            const cards = Core.selected.map(i => Core.hand[i]);
+            if(cards.length < 3) return alert("Selecione ao menos 3 cartas!");
+
+            // Validação de Sequência (Mesmo naipe e valores seguidos)
+            cards.sort((a, b) => Core.Config.order[a.v] - Core.Config.order[b.v]);
+            const sameSuit = cards.every(c => c.n === cards[0].n);
+            const isSeq = cards.every((c, i) => i === 0 || Core.Config.order[c.v] === Core.Config.order[cards[i-1].v] + 1);
+            
+            // Validação de Trinca (Valores iguais, naipes diferentes)
+            const isTrinca = cards.every(c => c.v === cards[0].v);
+
+            if((sameSuit && isSeq) || isTrinca) {
+                const team = (Core.myPos === 0 || Core.myPos === 2) ? 'a' : 'b';
+                this.state.melds[team].push(cards);
+                
+                // Remove da mão e atualiza pontos (simplificado)
+                this.state.pts[team] += cards.reduce((sum, c) => sum + Core.Config.points[c.v], 0);
+                Core.hand = Core.hand.filter((_, i) => !Core.selected.includes(i));
+                Core.selected = [];
+                this.save();
+            } else {
+                alert("Jogo inválido! Verifique a sequência ou trinca.");
+            }
         },
 
         manageTimers() {
@@ -375,13 +552,19 @@ const Core = {
                 Core.timer--;
                 const bar = document.getElementById('timer-progress');
                 if(bar) bar.style.width = (Core.timer / 90) * 100 + "%";
-                if(Core.timer <= 0 && this.state.vez === Core.myPos) console.log("Timeout!");
+                if(Core.timer <= 0 && this.state.vez === Core.myPos) {
+                    // Auto-descarte em caso de timeout
+                    if(this.state.fase === 'buy') this.handleAction('buy_deck');
+                    else {
+                        Core.selected = [0];
+                        this.handleAction('discard');
+                    }
+                }
             }, 1000);
         },
 
-        async handleAction(action) {
-            console.log("Ação executada:", action);
-            // Lógica de compra/descarte será expandida conforme as regras
+        leave() {
+            if(confirm("Deseja mesmo sair da partida?")) location.reload();
         }
     },
 
@@ -389,31 +572,44 @@ const Core = {
         async send() {
             const input = document.getElementById('chat-input');
             if(!input || !input.value.trim()) return;
-            const msg = { u: Core.user.email.split('@')[0], m: input.value.trim(), t: new Date().toLocaleTimeString() };
+            const msg = {
+                u: Core.user.email.split('@')[0],
+                m: input.value.trim(),
+                t: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            };
             Core.Game.state.chat.push(msg);
+            if(Core.Game.state.chat.length > 20) Core.Game.state.chat.shift();
             input.value = '';
-            await _supabase.from('salas').update({ estado: Core.Game.state }).eq('id', Core.roomID);
+            await Core.Game.save();
         },
         render() {
             const box = document.getElementById('chat-messages');
             if(!box || !Core.Game.state) return;
             box.innerHTML = Core.Game.state.chat.map(c => `
-                <div class="mb-2 italic">
-                    <b class="text-yellow-500">${c.u}:</b> <span class="text-white/80">${c.m}</span>
+                <div class="animate__animated animate__fadeInUp">
+                    <span class="text-[8px] opacity-30">${c.t}</span>
+                    <b class="text-yellow-500 ml-1">${c.u}:</b> 
+                    <span class="text-white/70">${c.m}</span>
                 </div>`).join('');
             box.scrollTop = box.scrollHeight;
         }
     }
 };
 
-// INICIALIZAÇÃO AUTOMÁTICA
+// 9. INICIALIZAÇÃO AO CARREGAR PÁGINA
 window.onload = () => {
+    // Verifica sessão ativa no Supabase
     _supabase.auth.getSession().then(({ data }) => {
         if (data.session) {
             Core.user = data.session.user;
             document.getElementById('display-name').innerText = Core.user.email.split('@')[0];
             Core.Navigation.go('view-menu');
         }
+    });
+
+    // Listener para enviar chat com "Enter"
+    document.addEventListener('keypress', (e) => {
+        if(e.key === 'Enter' && document.activeElement.id === 'chat-input') Core.Chat.send();
     });
 };
 </script>
