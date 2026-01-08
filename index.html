@@ -204,26 +204,24 @@
         </div>
     </section>
 
-    <section id="view-menu" class="hidden ...">
-
-    <section id="view-menu" class="hidden absolute inset-0 z-40 flex flex-col p-8 bg-emerald-900">
+  <section id="view-menu" class="hidden absolute inset-0 z-40 flex flex-col p-8 bg-emerald-900">
         <div class="flex justify-between items-start">
             <div class="animate__animated animate__fadeInLeft">
                 <span class="text-white/40 text-xs font-bold uppercase tracking-widest">Bem-vindo, Capitão</span>
                 <h2 id="display-name" class="text-3xl font-black text-yellow-500 italic">---</h2>
             </div>
-            <button onclick="Core.Auth.logout()" class="bg-red-500/20 text-red-400 px-4 py-2 rounded-xl font-bold text-xs">SAIR</button>
+            <button onclick="Core.Auth.logout()" class="bg-red-500/20 text-red-400 px-4 py-2 rounded-xl font-bold text-xs hover:bg-red-500/40 transition">SAIR</button>
         </div>
 
         <div class="mt-12 grid gap-6">
-            <button onclick="Core.Navigation.go('view-lobby')" class="h-40 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-[35px] text-4xl font-black text-emerald-950 shadow-2xl flex flex-col items-center justify-center group overflow-hidden relative">
+            <button onclick="Core.Navigation.go('view-lobby')" class="h-40 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-[35px] text-4xl font-black text-emerald-950 shadow-2xl flex flex-col items-center justify-center group overflow-hidden relative transition-transform active:scale-95">
                 <span class="z-10">JOGAR AGORA</span>
                 <div class="absolute inset-0 bg-white/20 translate-y-40 group-hover:translate-y-0 transition-transform"></div>
             </button>
             
             <div class="grid grid-cols-2 gap-6">
-                <button onclick="Core.Ranking.show()" class="h-28 bg-blue-600/80 rounded-[30px] font-black text-xl shadow-xl">RANKING</button>
-                <button onclick="alert('Funcionalidade de Perfil em Breve')" class="h-28 bg-emerald-700 rounded-[30px] font-black text-xl shadow-xl">PERFIL</button>
+                <button onclick="alert('Ranking em processamento...')" class="h-28 bg-blue-600/80 rounded-[30px] font-black text-xl shadow-xl active:scale-95 transition">RANKING</button>
+                <button onclick="alert('Estatísticas da Família Mendonça em breve!') class="h-28 bg-emerald-700 rounded-[30px] font-black text-xl shadow-xl active:scale-95 transition">PERFIL</button>
             </div>
         </div>
     </section>
