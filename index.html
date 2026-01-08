@@ -202,14 +202,10 @@
 </div>
 
 <script>
-// 7. CONFIGURAÇÃO DO BANCO (SUPABASE)
 const _supabase = supabase.createClient('https://bynafmrslfrsmeemcski.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5bmFmbXJzbGZyc21lZW1jc2tpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODM2OTgsImV4cCI6MjA4MzM1OTY5OH0.GDenWT1Cnunty2B6TWQdlUsDTQMY-6RMFBokbJCUySw');
 
-// 8. CORE ENGINE
 const Core = {
     user: null, roomID: null, myPos: 0, hand: [], selected: [], timer: 90, timerRef: null,
-    
-    // Regras e Pontuação
     Config: {
         suits: ['♥️','♦️','♣️','♠️'],
         values: ['A','2','3','4','5','6','7','8','9','10','J','Q','K'],
@@ -217,17 +213,14 @@ const Core = {
         order: {'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14,'2':15}
     },
 
-    // Sistema de Acesso
     Auth: {
         async handle(type) {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
-            if(!email || !pass) return alert("Preencha todos os campos.");
-
+            if(!email || !pass) return alert("Preencha e-mail e senha.");
             const { data, error } = type === 'login' ? 
                 await _supabase.auth.signInWithPassword({ email, password: pass }) :
                 await _supabase.auth.signUp({ email, password: pass });
-
             if (error) return alert("Erro: " + error.message);
             if (data?.user) {
                 Core.user = data.user;
@@ -235,13 +228,9 @@ const Core = {
                 Core.Navigation.go('view-menu');
             }
         },
-        async logout() {
-            await _supabase.auth.signOut();
-            location.reload();
-        }
+        async logout() { await _supabase.auth.signOut(); location.reload(); }
     },
 
-    // Navegação de Telas
     Navigation: {
         go(viewId) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
@@ -252,7 +241,163 @@ const Core = {
                 if(viewId === 'view-lobby') Core.Lobby.refresh();
             }
         }
+    },
+
+    Lobby: {
+        async refresh() {
+            const { data } = await _supabase.from('salas').select('*').order('created_at', {ascending: false});
+            const list = document.getElementById('room-list');
+            if(!list) return;
+            list.innerHTML = data && data.length > 0 ? data.map(room => `
+                <div onclick="Core.Game.join('${room.id}')" class="bg-white/5 p-8 rounded-[35px] border border-white/5 flex justify-between items-center hover:bg-white/10 transition cursor-pointer group shadow-lg">
+                    <div class="flex items-center gap-6">
+                        <div class="w-12 h-12 bg-yellow-500/10 rounded-2xl flex items-center justify-center text-yellow-500 font-black">
+                            ${(room.estado && room.estado.jogadores) ? room.estado.jogadores.length : 0}/4
+                        </div>
+                        <div>
+                            <h3 class="font-black text-xl text-white italic group-hover:text-yellow-500 transition">${room.nome}</h3>
+                            <p class="text-[9px] text-white/30 uppercase tracking-widest mt-1">Mestre: ${room.criador_nome}</p>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-500 text-black px-8 py-3 rounded-2xl font-black text-xs group-hover:scale-110 transition shadow-xl">ENTRAR</div>
+                </div>`).join('') : '<div class="text-center py-20 opacity-20 italic">Nenhuma mesa encontrada.</div>';
+        }
+    },
+
+    Game: {
+        state: null,
+        async createNewRoom() {
+            const nomeMesa = prompt("Nome da Mesa:");
+            if(!nomeMesa) return;
+            const initialState = {
+                vez: 0, fase: 'buy', monte: 104, lixo: [],
+                jogadores: [{ id: Core.user.id, nome: Core.user.email.split('@')[0] }],
+                melds: { a: [], b: [] }, pts: { a: 0, b: 0 }, chat: [], finalizado: false
+            };
+            const { data, error } = await _supabase.from('salas').insert([{
+                nome: nomeMesa,
+                criador_nome: Core.user.email.split('@')[0],
+                estado: initialState
+            }]).select();
+            if(error) alert("Erro ao criar: " + error.message);
+            else if(data) this.join(data[0].id);
+        },
+
+        async join(id) {
+            Core.roomID = id;
+            Core.Navigation.go('view-mesa');
+            _supabase.channel(`room_${id}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'salas' }, 
+                payload => this.sync(payload.new)).subscribe();
+            const { data } = await _supabase.from('salas').select('*').eq('id', id).single();
+            if(!data.estado.jogadores.find(p => p.id === Core.user.id) && data.estado.jogadores.length < 4) {
+                data.estado.jogadores.push({ id: Core.user.id, nome: Core.user.email.split('@')[0] });
+                await _supabase.from('salas').update({ estado: data.estado }).eq('id', id);
+            }
+            Core.myPos = data.estado.jogadores.findIndex(p => p.id === Core.user.id);
+            if(Core.hand.length === 0) this.generateInitialHand();
+            this.sync(data);
+        },
+
+        sync(data) {
+            this.state = data.estado;
+            document.getElementById('score-a').innerText = String(this.state.pts.a).padStart(4, '0');
+            document.getElementById('score-b').innerText = String(this.state.pts.b).padStart(4, '0');
+            document.getElementById('deck-count').innerText = this.state.monte;
+            document.getElementById('lixo-count').innerText = this.state.lixo.length > 0 ? `LIXO: ${this.state.lixo.length}` : "LIXO VAZIO";
+            this.renderHand();
+            this.renderMelds();
+            Core.Chat.render();
+            this.updateControls();
+        },
+
+        generateInitialHand() {
+            Core.hand = [];
+            for(let i=0; i<11; i++) Core.hand.push(this.createRandomCard());
+            this.sortHand();
+        },
+
+        createRandomCard() {
+            const suit = Core.Config.suits[Math.floor(Math.random()*4)];
+            const value = Core.Config.values[Math.floor(Math.random()*13)];
+            return { v: value, n: suit, cor: (suit==='♥️'||suit==='♦️')?'card-red':'card-black', id: Math.random() };
+        },
+
+        sortHand() {
+            Core.hand.sort((a,b) => Core.Config.order[a.v] - Core.Config.order[b.v]);
+            this.renderHand();
+        },
+
+        renderHand() {
+            const container = document.getElementById('player-hand');
+            if(!container) return;
+            container.innerHTML = Core.hand.map((c, i) => `
+                <div onclick="Core.Game.selectCard(${i})" class="card ${c.cor} ${Core.selected.includes(i)?'selected':''}" style="margin-left: -35px; z-index: ${i}">
+                    <div class="value">${c.v}</div>
+                    <div class="suit-mini">${c.n}</div>
+                    <div class="suit-main">${c.n}</div>
+                    <div class="value self-end rotate-180">${c.v}</div>
+                </div>`).join('');
+        },
+
+        renderMelds() {
+            const draw = (t, el) => {
+                document.getElementById(el).innerHTML = this.state.melds[t].map(g => `
+                    <div class="meld-group">${g.map(c => `<div class="card ${c.cor} scale-50 -m-6"><div class="value">${c.v}</div><div class="suit-main">${c.n}</div></div>`).join('')}</div>
+                `).join('');
+            };
+            draw('a', 'melds-a'); draw('b', 'melds-b');
+        },
+
+        selectCard(i) {
+            if(Core.selected.includes(i)) Core.selected = Core.selected.filter(x => x !== i);
+            else Core.selected.push(i);
+            this.renderHand();
+            this.updateControls();
+        },
+
+        updateControls() {
+            const isMe = this.state && this.state.vez === Core.myPos;
+            document.getElementById('btn-meld').classList.toggle('hidden', !isMe || Core.selected.length < 3);
+            document.getElementById('btn-discard').classList.toggle('hidden', !isMe || Core.selected.length !== 1 || this.state.fase !== 'discard');
+        },
+
+        async handleAction(type) {
+            if(this.state.vez !== Core.myPos) return;
+            if(type === 'buy_deck' && this.state.fase === 'buy') {
+                Core.hand.push(this.createRandomCard());
+                this.state.monte--; this.state.fase = 'discard';
+            } else if(type === 'discard' && Core.selected.length === 1) {
+                this.state.lixo.push(Core.hand.splice(Core.selected[0], 1)[0]);
+                this.state.vez = (this.state.vez + 1) % this.state.jogadores.length;
+                this.state.fase = 'buy'; Core.selected = [];
+            }
+            await _supabase.from('salas').update({ estado: this.state }).eq('id', Core.roomID);
+        }
+    },
+
+    Chat: {
+        async send() {
+            const input = document.getElementById('chat-input');
+            if(!input.value.trim()) return;
+            Core.Game.state.chat.push({ u: Core.user.email.split('@')[0], m: input.value });
+            input.value = '';
+            await _supabase.from('salas').update({ estado: Core.Game.state }).eq('id', Core.roomID);
+        },
+        render() {
+            const box = document.getElementById('chat-messages');
+            if(box && Core.Game.state) box.innerHTML = Core.Game.state.chat.map(m => `<div><b>${m.u}:</b> ${m.m}</div>`).join('');
+        }
     }
+};
+
+window.onload = () => {
+    _supabase.auth.getSession().then(({ data }) => {
+        if (data.session) {
+            Core.user = data.session.user;
+            document.getElementById('display-name').innerText = Core.user.email.split('@')[0];
+            Core.Navigation.go('view-menu');
+        }
+    });
 };
 </script>
 // CONTINUAÇÃO DO OBJETO CORE... cole logo após o fechamento de Navigation: { ... },
